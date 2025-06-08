@@ -1,0 +1,44 @@
+<link rel="stylesheet" href="/frontend-user/assets/css/bootstrap.min.css">
+<script src="/frontend-user/assets/js/profile-api.js"></script>
+<!-- Avatar -->
+<img id="avatar-img" src="/uploads/default-avatar.png" class="rounded-circle mb-3" width="120" height="120" alt="Avatar">
+<form id="avatar-form" enctype="multipart/form-data">
+    <input type="file" id="avatar" name="avatar" accept="image/*" required>
+    <button type="submit" class="btn btn-primary btn-sm">Đổi avatar</button>
+</form>
+<!-- Profile form -->
+<form id="profile-form">
+    <div class="mb-3">
+        <label for="full_name" class="form-label">Họ tên</label>
+        <input type="text" class="form-control" id="full_name" name="full_name" required>
+    </div>
+    <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" class="form-control" id="email" name="email" required>
+    </div>
+    <div class="mb-3">
+        <label for="phone" class="form-label">Số điện thoại</label>
+        <input type="text" class="form-control" id="phone" name="phone">
+    </div>
+    <div class="mb-3">
+        <label for="bio" class="form-label">Giới thiệu</label>
+        <textarea class="form-control" id="bio" name="bio"></textarea>
+    </div>
+    <button type="submit" class="btn btn-success">Cập nhật thông tin</button>
+</form>
+<!-- Password form -->
+<form id="password-form" class="mt-4">
+    <div class="mb-3">
+        <label for="current_password" class="form-label">Mật khẩu hiện tại</label>
+        <input type="password" class="form-control" id="current_password" name="current_password" required>
+    </div>
+    <div class="mb-3">
+        <label for="new_password" class="form-label">Mật khẩu mới</label>
+        <input type="password" class="form-control" id="new_password" name="new_password" required>
+    </div>
+    <div class="mb-3">
+        <label for="confirm_password" class="form-label">Nhập lại mật khẩu mới</label>
+        <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+    </div>
+    <button type="submit" class="btn btn-warning">Đổi mật khẩu</button>
+</form>

@@ -1,0 +1,218 @@
+<?php
+// Define constants
+define('VIEWS_DIR', __DIR__ . '/../views');
+define('APP_NAME', 'Newcoco');
+define('APP_DESCRIPTION', 'Nền tảng tổ chức cuộc thi trực tuyến');
+define('APP_KEYWORDS', 'cuộc thi, thi đấu, trực tuyến, newcoco');
+define('APP_LOGO', url('assets/images/logo.png'));
+
+// --- Auth & Permission Helpers ---
+
+/**
+ * Kiểm tra người dùng đã đăng nhập chưa
+ */
+function isLoggedIn() {
+    return isset($_SESSION['user_id']);
+}
+
+/**
+ * Lấy ID người dùng hiện tại
+ */
+function currentUserId() {
+    return $_SESSION['user_id'] ?? null;
+}
+
+/**
+ * Kiểm tra người dùng có phải admin không
+ */
+function isAdmin() {
+    return !empty($_SESSION['is_admin']) && $_SESSION['is_admin'] == 1;
+}
+
+/**
+ * Chuyển hướng
+ */
+function redirect($url) {
+    header('Location: ' . $url);
+    exit;
+}
+
+/**
+ * Kiểm tra quyền chỉnh sửa contest
+ */
+function canEditContest($contest) {
+    return isAdmin() || (isLoggedIn() && $contest['creator_id'] == currentUserId());
+}
+
+/**
+ * Kiểm tra quyền submit contestant
+ */
+function canSubmitContestant($contest) {
+    return isLoggedIn() && $contest['status'] === 'active';
+}
+
+/**
+ * Kiểm tra quyền chỉnh sửa contestant
+ */
+function canEditContestant($contestant) {
+    return isAdmin() || (isLoggedIn() && $contestant['submitter_id'] == currentUserId());
+}
+
+/**
+ * Kiểm tra quyền vote
+ */
+function canVote($contest, $contestant) {
+    return $contest['status'] === 'active' && $contestant['status'] === 'approved' && isLoggedIn();
+}
+
+/**
+ * Kiểm tra quyền xóa comment
+ */
+function canDeleteComment($comment) {
+    return isAdmin() || (isLoggedIn() && $comment['user_id'] == currentUserId());
+}
+
+// URL helpers
+function url($path = '') {
+    return SITE_URL . '/' . ltrim($path, '/');
+}
+
+function asset($path) {
+    return url('assets/' . ltrim($path, '/'));
+}
+
+// Form helpers
+function old($key, $default = '') {
+    return $_POST[$key] ?? $default;
+}
+
+function csrf_field() {
+    return '<input type="hidden" name="csrf_token" value="' . generate_csrf_token() . '">';
+}
+
+// View helpers
+function view($name, $data = []) {
+    extract($data);
+    require_once VIEWS_DIR . '/' . $name . '.php';
+}
+
+function partial($name, $data = []) {
+    extract($data);
+    require_once VIEWS_DIR . '/partials/' . $name . '.php';
+}
+
+// Flash message helpers
+function flash($key, $message) {
+    $_SESSION['flash'][$key] = $message;
+}
+
+function get_flash($key) {
+    if (isset($_SESSION['flash'][$key])) {
+        $message = $_SESSION['flash'][$key];
+        unset($_SESSION['flash'][$key]);
+        return $message;
+    }
+    return null;
+}
+
+// Auth helpers
+function auth() {
+    return isset($_SESSION['user_id']);
+}
+
+function user() {
+    if (!auth()) {
+        return null;
+    }
+    static $user = null;
+    if ($user === null) {
+        $db = get_db_connection();
+        $stmt = $db->prepare('SELECT * FROM users WHERE id = ?');
+        $stmt->execute([$_SESSION['user_id']]);
+        $user = $stmt->fetch();
+    }
+    return $user;
+}
+
+// String helpers
+function str_limit($string, $limit = 100, $end = '...') {
+    if (mb_strlen($string) <= $limit) {
+        return $string;
+    }
+    return rtrim(mb_substr($string, 0, $limit)) . $end;
+}
+
+function slug($string) {
+    $string = mb_strtolower($string);
+    $string = preg_replace('/[^a-z0-9\s-]/', '', $string);
+    $string = preg_replace('/[\s-]+/', ' ', $string);
+    $string = preg_replace('/\s/', '-', $string);
+    return $string;
+}
+
+// Array helpers
+function array_get($array, $key, $default = null) {
+    if (is_null($key)) {
+        return $array;
+    }
+    foreach (explode('.', $key) as $segment) {
+        if (!is_array($array) || !array_key_exists($segment, $array)) {
+            return $default;
+        }
+        $array = $array[$segment];
+    }
+    return $array;
+}
+
+// Date helpers
+function time_elapsed_string($datetime) {
+    $now = new DateTime;
+    $ago = new DateTime($datetime);
+    $diff = $now->diff($ago);
+
+    if ($diff->y > 0) {
+        return $diff->y . ' năm trước';
+    }
+    if ($diff->m > 0) {
+        return $diff->m . ' tháng trước';
+    }
+    if ($diff->d > 0) {
+        return $diff->d . ' ngày trước';
+    }
+    if ($diff->h > 0) {
+        return $diff->h . ' giờ trước';
+    }
+    if ($diff->i > 0) {
+        return $diff->i . ' phút trước';
+    }
+    return 'Vừa xong';
+}
+
+// Debug helpers
+function dd($data) {
+    echo '<pre>';
+    var_dump($data);
+    echo '</pre>';
+    die();
+}
+
+function dump($data) {
+    echo '<pre>';
+    var_dump($data);
+    echo '</pre>';
+}
+
+/**
+ * Get current user ID from session
+ */
+function get_current_user_id() {
+    return $_SESSION['user_id'] ?? null;
+}
+
+/**
+ * Get current URL
+ */
+function current_url() {
+    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+    return $protocol . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+}

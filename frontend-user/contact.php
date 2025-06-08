@@ -1,0 +1,146 @@
+<?php
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/includes/functions.php';
+
+$page_title = 'Liên hệ';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $name = $_POST['name'] ?? '';
+    $email = $_POST['email'] ?? '';
+    $subject = $_POST['subject'] ?? '';
+    $message = $_POST['message'] ?? '';
+
+    $errors = [];
+
+    if (empty($name)) {
+        $errors[] = 'Vui lòng nhập họ tên';
+    }
+
+    if (empty($email)) {
+        $errors[] = 'Vui lòng nhập email';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = 'Email không hợp lệ';
+    }
+
+    if (empty($subject)) {
+        $errors[] = 'Vui lòng nhập tiêu đề';
+    }
+
+    if (empty($message)) {
+        $errors[] = 'Vui lòng nhập nội dung';
+    }
+
+    if (empty($errors)) {
+        // Gửi email
+        $to = SITE_EMAIL;
+        $headers = "From: $email\r\n";
+        $headers .= "Reply-To: $email\r\n";
+        $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
+
+        $email_content = "
+            <h2>Thông tin liên hệ</h2>
+            <p><strong>Họ tên:</strong> $name</p>
+            <p><strong>Email:</strong> $email</p>
+            <p><strong>Tiêu đề:</strong> $subject</p>
+            <p><strong>Nội dung:</strong></p>
+            <p>" . nl2br($message) . "</p>
+        ";
+
+        if (mail($to, $subject, $email_content, $headers)) {
+            set_flash_message('success', 'Gửi tin nhắn thành công! Chúng tôi sẽ liên hệ với bạn sớm nhất có thể.');
+            redirect(SITE_URL . '/contact.php');
+        } else {
+            set_flash_message('danger', 'Có lỗi xảy ra, vui lòng thử lại sau!');
+        }
+    }
+
+    if (!empty($errors)) {
+        set_flash_message('danger', implode('<br>', $errors));
+    }
+}
+
+$content = '<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item active">Liên hệ</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title mb-4">Gửi tin nhắn</h4>
+                <form method="POST" action="" onsubmit="return validateForm(\'contact-form\')">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Họ tên</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="subject" class="form-label">Tiêu đề</label>
+                        <input type="text" class="form-control" id="subject" name="subject" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Nội dung</label>
+                        <textarea class="form-control" id="message" name="message" rows="5" required></textarea>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-2"></i>
+                            Gửi tin nhắn
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title mb-4">Thông tin liên hệ</h4>
+                <ul class="list-unstyled">
+                    <li class="mb-3">
+                        <i class="fas fa-envelope me-2"></i>
+                        ' . SITE_EMAIL . '
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-phone me-2"></i>
+                        ' . SITE_PHONE . '
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-map-marker-alt me-2"></i>
+                        ' . SITE_ADDRESS . '
+                    </li>
+                </ul>
+                <div class="mt-4">
+                    <h5 class="mb-3">Theo dõi chúng tôi</h5>
+                    <div class="d-flex gap-3">
+                        <a href="#" class="text-primary" data-bs-toggle="tooltip" title="Facebook">
+                            <i class="fab fa-facebook fa-2x"></i>
+                        </a>
+                        <a href="#" class="text-info" data-bs-toggle="tooltip" title="Twitter">
+                            <i class="fab fa-twitter fa-2x"></i>
+                        </a>
+                        <a href="#" class="text-danger" data-bs-toggle="tooltip" title="YouTube">
+                            <i class="fab fa-youtube fa-2x"></i>
+                        </a>
+                        <a href="#" class="text-primary" data-bs-toggle="tooltip" title="LinkedIn">
+                            <i class="fab fa-linkedin fa-2x"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>';
+
+require_once __DIR__ . '/includes/header.php';
+echo $content;
+require_once __DIR__ . '/includes/footer.php';

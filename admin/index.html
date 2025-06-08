@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Quản trị viên</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --color-bg: #f8f9fa;
+            --color-sidebar: linear-gradient(135deg, #3a2fa4 0%, #5f4bb6 100%);
+            --color-sidebar-text: #fff;
+            --color-sidebar-accent: #ffd600;
+            --color-mini-bg: #fff;
+            --color-mini-value: #10b981;
+            --color-main-text: #222;
+        }
+        [data-theme="dark"] {
+            --color-bg: #181a20;
+            --color-sidebar: linear-gradient(135deg, #23234a 0%, #3a2fa4 100%);
+            --color-sidebar-text: #fff;
+            --color-sidebar-accent: #ffd600;
+            --color-mini-bg: #23234a;
+            --color-mini-value: #4ade80;
+            --color-main-text: #fff;
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            min-height: 100vh;
+            background: var(--color-bg) !important;
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+        .layout-admin {
+            display: flex;
+            min-height: 100vh;
+            width: 100vw;
+            background: var(--color-bg) !important;
+        }
+        .sidebar-admin {
+            width: 200px; min-width: 180px; max-width: 220px;
+            height: 100vh;
+            background: var(--color-sidebar) !important; color: var(--color-sidebar-text);
+            position: fixed; left: 0; top: 0; bottom: 0; z-index: 100;
+            display: flex; flex-direction: column; padding: 0 0 24px 0; transition: left 0.2s;
+        }
+        .sidebar-admin .hello {
+            font-size: 1.25rem; font-weight: bold; color: var(--color-sidebar-accent);
+            background: none; padding: 1.5rem 1rem 0.5rem 1.5rem; letter-spacing: 1px;
+        }
+        .sidebar-admin .mini-stats {
+            background: var(--color-mini-bg); color: #333; border-radius: 16px;
+            margin: 0 1rem 1.5rem 1rem; padding: 1.1rem 1rem 1.1rem 1rem;
+            box-shadow: 0 2px 12px 0 rgba(80,80,200,0.10); font-size: 1.08rem;
+        }
+        [data-theme="dark"] .sidebar-admin .mini-stats { color: #fff; }
+        .sidebar-admin .mini-stats h3 {
+            font-size: 1.1rem; font-weight: bold; margin-bottom: 0.7rem;
+            color: #3a2fa4; text-align: center;
+        }
+        .sidebar-admin .mini-stats .stat-row {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;
+        }
+        .sidebar-admin .mini-stats .stat-row:last-child { margin-bottom: 0; }
+        .sidebar-admin .mini-stats .stat-label { font-weight: 600; }
+        .sidebar-admin .mini-stats .stat-value { font-weight: bold; color: var(--color-mini-value); }
+        .sidebar-admin .menu {
+            flex: 1; display: flex; flex-direction: column; gap: 2px; margin-top: 0.5rem;
+        }
+        .sidebar-admin .menu a {
+            color: var(--color-sidebar-text); text-decoration: none; font-weight: bold;
+            padding: 0.85rem 1.5rem; border-radius: 0.5rem;
+            transition: background 0.2s, color 0.2s; font-size: 1.08rem; letter-spacing: 0.5px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .sidebar-admin .menu a:hover, .sidebar-admin .menu a.active {
+            background: var(--color-sidebar-accent); color: #3a2fa4;
+        }
+        .sidebar-admin .menu .logout { color: var(--color-sidebar-accent); margin-top: auto; }
+        .sidebar-admin .toggle-btn {
+            display: none; position: absolute; top: 10px; right: -40px; background: var(--color-sidebar); border: none; color: #fff; border-radius: 50%; width: 36px; height: 36px; align-items: center; justify-content: center; font-size: 1.5rem; z-index: 200;
+        }
+        @media (max-width: 900px) {
+            .sidebar-admin { left: -200px; }
+            .sidebar-admin.open { left: 0; }
+            .sidebar-admin .toggle-btn { display: flex; }
+            .main-content-admin { margin-left: 0; width: 100vw; padding: 12px 4px; }
+        }
+        .main-content-admin {
+            margin-left: 200px;
+            flex: 1;
+            min-height: 100vh;
+            width: calc(100vw - 200px);
+            background: var(--color-bg) !important;
+            padding: 32px 24px;
+            box-sizing: border-box;
+            overflow-x: auto;
+        }
+        .copy-btn { color: #1976d2; cursor: pointer; font-size: 1rem; margin-left: 6px; position: relative; }
+        .copy-btn.copied::after {
+            content: 'Đã copy!'; position: absolute; left: 50%; top: -28px; transform: translateX(-50%); background: #222; color: #fff; padding: 2px 8px; border-radius: 6px; font-size: 0.9em; opacity: 0.95; white-space: nowrap;
+        }
+        [data-theme="dark"] .copy-btn.copied::after { background: #fff; color: #222; }
+        .dark-toggle { position: absolute; top: 18px; right: 18px; z-index: 300; background: #fff; border: none; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: #3a2fa4; box-shadow: 0 2px 8px #0002; }
+        [data-theme="dark"] .dark-toggle { background: #23234a; color: #ffd600; }
+    </style>
+</head>
+<body data-theme="light">
+<button class="dark-toggle" id="darkToggle" title="Chuyển chế độ sáng/tối"><i class="bi bi-moon"></i></button>
+<div class="layout-admin">
+    <!-- SIDEBAR -->
+    <aside class="sidebar-admin" id="sidebar">
+        <button class="toggle-btn" id="sidebarToggle"><i class="bi bi-list"></i></button>
+        <div class="hello">Hello Bong!</div>
+        <div class="mini-stats">
+            <h3>Thống Kê</h3>
+            <div class="stat-row"><span class="stat-label">Online</span><span class="stat-value">12</span></div>
+            <div class="stat-row"><span class="stat-label">Thành Công</span><span class="stat-value">34</span></div>
+            <div class="stat-row"><span class="stat-label">Lượt Truy Cập</span><span class="stat-value">1234</span></div>
+            <div class="stat-row"><span class="stat-label">Lượt Thất Bại</span><span class="stat-value">2</span></div>
+        </div>
+        <nav class="menu">
+            <a href="#" class="active"><i class="bi bi-speedometer2"></i> <span>Bảng Điều Khiển</span></a>
+            <a href="#"><i class="bi bi-people"></i> <span>DS Thí Sinh</span></a>
+            <a href="#"><i class="bi bi-trophy"></i> <span>DS Cuộc Thi</span></a>
+            <a href="#"><i class="bi bi-plug"></i> <span>API Kết Nối</span></a>
+            <a href="#"><i class="bi bi-gear"></i> <span>Cài Đặt Web</span></a>
+            <a href="#" class="logout"><i class="bi bi-box-arrow-right"></i> <span>Đăng Xuất</span></a>
+        </nav>
+    </aside>
+    <!-- MAIN CONTENT -->
+    <div class="main-content-admin">
+        <h1 class="text-3xl fw-bold mb-4 text-primary">Bảng Điều Khiển</h1>
+        <!-- Quick Actions -->
+        <div class="d-flex flex-wrap gap-2 mb-4 justify-content-start">
+            <button class="btn btn-success d-flex align-items-center gap-2" title="Cấu hình gửi thông báo (popup, Telegram, âm thanh, trực tiếp thao tác của user)"><span class="bi bi-bell-fill"></span> Cài Đặt Thông Báo</button>
+            <button class="btn btn-primary d-flex align-items-center gap-2" title="Sinh link phụ cho từng admin/cuộc thi để quản lý"><span class="bi bi-link-45deg"></span> Tạo Tên Link</button>
+            <button class="btn btn-info d-flex align-items-center gap-2" title="Chặn địa chỉ IP truy cập không hợp lệ hoặc bất thường"><span class="bi bi-shield-lock"></span> Chặn IP</button>
+            <button class="btn btn-primary d-flex align-items-center gap-2" style="background:#1877f3;" title="Tích hợp đăng nhập Facebook/gửi OTP/Gửi thông báo phê duyệt"><span class="bi bi-facebook"></span> Facebook</button>
+            <button class="btn btn-danger d-flex align-items-center gap-2" title="Tích hợp đăng nhập Gmail/gửi OTP/Gửi thông báo phê duyệt"><span class="bi bi-envelope-fill"></span> Gmail</button>
+            <button class="btn btn-purple d-flex align-items-center gap-2" style="background:#7c3aed;" title="Tích hợp đăng nhập Yahoo/gửi OTP/Gửi thông báo phê duyệt"><span class="bi bi-envelope"></span> Yahoo</button>
+            <button class="btn btn-info d-flex align-items-center gap-2" style="background:#008fe5;" title="Tích hợp đăng nhập Zalo/gửi OTP/Gửi thông báo phê duyệt"><span class="bi bi-chat-dots"></span> Zalo</button>
+        </div>
+        <!-- Bộ lọc/tìm kiếm -->
+        <div class="row mb-3 g-2">
+            <div class="col-md-2"><input type="text" class="form-control" placeholder="Tài khoản..."></div>
+            <div class="col-md-2"><input type="text" class="form-control" placeholder="Lọc IP..."></div>
+            <div class="col-md-2">
+                <select class="form-control">
+                    <option value="">Trạng thái</option>
+                    <option value="success">Thành công</option>
+                    <option value="fail">Thất bại</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select class="form-control">
+                    <option value="">Nền tảng</option>
+                    <option>Facebook</option>
+                    <option>Gmail</option>
+                    <option>Yahoo</option>
+                    <option>Zalo</option>
+                </select>
+            </div>
+            <div class="col-md-2"><button class="btn btn-secondary w-100">Lọc</button></div>
+        </div>
+        <h3 class="mb-3">Danh Sách Truy Cập</h3>
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>STT</th>
+                        <th>Tên Link</th>
+                        <th>Tài Khoản</th>
+                        <th>Mật Khẩu</th>
+                        <th>OTP Login</th>
+                        <th>OTP User</th>
+                        <th>Thiết Bị IP</th>
+                        <th>Thời Gian</th>
+                        <th>Kết Nối API</th>
+                        <th>Thông Báo</th>
+                        <th>Phê Duyệt</th>
+                        <th>Kết Quả</th>
+                        <th>Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>link-phu-1 <div><span class="copy-btn text-primary" onclick="copyToClipboard(this, 'link-phu-1')">Copy</span></div></td>
+                        <td>user1 <div><span class="copy-btn text-primary" onclick="copyToClipboard(this, 'user1')">Copy</span></div></td>
+                        <td>matkhau123 <div><span class="copy-btn text-primary" onclick="copyToClipboard(this, 'matkhau123')">Copy</span></div></td>
+                        <td><input type="text" class="form-control form-control-sm d-inline-block" style="width:90px;" placeholder="Nhập OTP"><div><span class="copy-btn text-primary" onclick="copyToClipboard(this, '123456')">Copy</span></div></td>
+                        <td><input type="text" class="form-control form-control-sm d-inline-block" style="width:90px;" placeholder="Nhập OTP"></td>
+                        <td>192.168.1.1 <div><span class="copy-btn text-primary" onclick="copyToClipboard(this, '192.168.1.1')">Copy</span></div></td>
+                        <td>01/06/2024 10:00</td>
+                        <td><span class="bi bi-facebook text-primary" title="Facebook"></span></td>
+                        <td><button class="btn btn-warning btn-sm" title="Gửi thông báo"><span class="bi bi-bell"></span></button></td>
+                        <td><button class="btn btn-success btn-sm" title="Phê duyệt">Phê Duyệt</button></td>
+                        <td><span class="text-success fs-4" title="Thành công">&#10003;</span></td>
+                        <td>
+                            <button class="btn btn-info btn-sm" title="Điều hướng nhanh"><span class="bi bi-arrow-right-circle"></span></button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>link-phu-2 <div><span class="copy-btn text-primary" onclick="copyToClipboard(this, 'link-phu-2')">Copy</span></div></td>
+                        <td>user2 <div><span class="copy-btn text-primary" onclick="copyToClipboard(this, 'user2')">Copy</span></div></td>
+                        <td>matkhau456 <div><span class="copy-btn text-primary" onclick="copyToClipboard(this, 'matkhau456')">Copy</span></div></td>
+                        <td><input type="text" class="form-control form-control-sm d-inline-block" style="width:90px;" placeholder="Nhập OTP"><div><span class="copy-btn text-primary" onclick="copyToClipboard(this, '654321')">Copy</span></div></td>
+                        <td><input type="text" class="form-control form-control-sm d-inline-block" style="width:90px;" placeholder="Nhập OTP"></td>
+                        <td>192.168.1.2 <div><span class="copy-btn text-primary" onclick="copyToClipboard(this, '192.168.1.2')">Copy</span></div></td>
+                        <td>01/06/2024 10:05</td>
+                        <td><span class="bi bi-google text-danger" title="Gmail"></span></td>
+                        <td><button class="btn btn-warning btn-sm" title="Gửi thông báo"><span class="bi bi-bell"></span></button></td>
+                        <td><button class="btn btn-danger btn-sm" title="Từ chối">Từ Chối</button></td>
+                        <td><span class="text-danger fs-4" title="Thất bại">&#10007;</span></td>
+                        <td>
+                            <button class="btn btn-info btn-sm" title="Điều hướng nhanh"><span class="bi bi-arrow-right-circle"></span></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+// Sidebar toggle (mobile)
+document.getElementById('sidebarToggle').onclick = function() {
+    document.getElementById('sidebar').classList.toggle('open');
+};
+// Dark mode toggle
+const darkToggle = document.getElementById('darkToggle');
+darkToggle.onclick = function() {
+    const body = document.body;
+    const isDark = body.getAttribute('data-theme') === 'dark';
+    body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    darkToggle.innerHTML = isDark ? '<i class="bi bi-moon"></i>' : '<i class="bi bi-brightness-high"></i>';
+};
+// Hiệu ứng copy to clipboard
+function copyToClipboard(el, text) {
+    navigator.clipboard.writeText(text);
+    el.classList.add('copied');
+    setTimeout(() => el.classList.remove('copied'), 1200);
+}
+// Demo realtime stats (giả lập)
+function randomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+setInterval(() => {
+    document.getElementById('stat-online').textContent = randomInt(10, 30);
+    document.getElementById('stat-success').textContent = randomInt(20, 50);
+    document.getElementById('stat-access').textContent = randomInt(1000, 2000);
+    document.getElementById('stat-fail').textContent = randomInt(0, 5);
+}, 5000);
+</script>
+</body>
+</html>

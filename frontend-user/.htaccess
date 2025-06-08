@@ -1,0 +1,235 @@
+# Enable rewrite engine
+RewriteEngine On
+
+# Set base directory
+RewriteBase /
+
+# Prevent directory listing
+Options -Indexes
+
+# Protect sensitive files
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Protect config file
+<Files "config.php">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Protect uploads directory
+<Directory "uploads">
+    Options -Indexes
+    AllowOverride None
+    Order allow,deny
+    Allow from all
+</Directory>
+
+# Handle errors
+ErrorDocument 404 /404.php
+ErrorDocument 403 /403.php
+ErrorDocument 500 /500.php
+
+# Force HTTPS
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Remove .php extension
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^([^\.]+)$ $1.php [NC,L]
+
+# Prevent access to hidden files
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Set default character set
+AddDefaultCharset UTF-8
+
+# Enable compression
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/x-javascript
+</IfModule>
+
+# Set security headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    Header set Content-Security-Policy "default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval';"
+    Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+</IfModule>
+
+# Block access to sensitive files
+<FilesMatch "^(\.env|\.git|\.svn|\.htaccess|\.htpasswd|\.gitignore|composer\.json|composer\.lock|package\.json|package-lock\.json|README\.md|CHANGELOG\.md|LICENSE|\.DS_Store)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Block access to backup files
+<FilesMatch "\.(bak|backup|old|swp|tmp)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Block access to log files
+<FilesMatch "\.(log|logs)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Block access to database files
+<FilesMatch "\.(sql|sqlite|db)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Block access to configuration files
+<FilesMatch "\.(ini|conf|config|cfg)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Block access to source code files
+<FilesMatch "\.(php|php3|php4|php5|php7|phtml|phptml|phps|phar|inc)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Allow access to specific PHP files
+<FilesMatch "^(index|404|403|500|about|contact|login|register|logout|profile|change-password|upload-avatar|contests|contestants|vote)\.php$">
+    Order allow,deny
+    Allow from all
+</FilesMatch>
+
+# Block access to uploads directory except for images
+<Directory "uploads">
+    Options -Indexes
+    AllowOverride None
+    Order allow,deny
+    Allow from all
+
+    # Allow only image files
+    <FilesMatch "\.(jpg|jpeg|png|gif|webp)$">
+        Order allow,deny
+        Allow from all
+    </FilesMatch>
+
+    # Block all other file types
+    <FilesMatch "^(?!.*\.(jpg|jpeg|png|gif|webp)$).*$">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+
+    # Prevent PHP execution
+    <FilesMatch "\.php$">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+
+    # Prevent script execution
+    <FilesMatch "\.(php|php3|php4|php5|php7|phtml|phptml|phps|phar|inc|asp|aspx|jsp|jspx|pl|py|rb|sh|cgi)$">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+
+    # Set security headers for uploads
+    <IfModule mod_headers.c>
+        Header set X-Content-Type-Options "nosniff"
+        Header set X-Frame-Options "DENY"
+        Header set Content-Security-Policy "default-src 'none'"
+        Header set X-Permitted-Cross-Domain-Policies "none"
+    </IfModule>
+</Directory>
+
+# Block access to includes directory
+<Directory "includes">
+    Options -Indexes
+    AllowOverride None
+    Order allow,deny
+    Deny from all
+</Directory>
+
+# Block access to ajax directory except for specific files
+<Directory "ajax">
+    Options -Indexes
+    AllowOverride None
+    Order allow,deny
+    Deny from all
+
+    # Allow specific AJAX files
+    <FilesMatch "^(vote|login|register|profile|upload)\.php$">
+        Order allow,deny
+        Allow from all
+    </FilesMatch>
+</Directory>
+
+# Block access to auth directory except for specific files
+<Directory "auth">
+    Options -Indexes
+    AllowOverride None
+    Order allow,deny
+    Deny from all
+
+    # Allow specific auth files
+    <FilesMatch "^(login|register|logout)\.php$">
+        Order allow,deny
+        Allow from all
+    </FilesMatch>
+</Directory>
+
+# Block access to users directory except for specific files
+<Directory "users">
+    Options -Indexes
+    AllowOverride None
+    Order allow,deny
+    Deny from all
+
+    # Allow specific user files
+    <FilesMatch "^(profile|change-password|upload-avatar)\.php$">
+        Order allow,deny
+        Allow from all
+    </FilesMatch>
+</Directory>
+
+# Block access to contests directory except for specific files
+<Directory "contests">
+    Options -Indexes
+    AllowOverride None
+    Order allow,deny
+    Deny from all
+
+    # Allow specific contest files
+    <FilesMatch "^(index|view)\.php$">
+        Order allow,deny
+        Allow from all
+    </FilesMatch>
+</Directory>
+
+# Block access to contestants directory except for specific files
+<Directory "contestants">
+    Options -Indexes
+    AllowOverride None
+    Order allow,deny
+    Deny from all
+
+    # Allow specific contestant files
+    <FilesMatch "^(register)\.php$">
+        Order allow,deny
+        Allow from all
+    </FilesMatch>
+</Directory>

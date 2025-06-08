@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /includes/
+Disallow: /uploads/
+Disallow: /ajax/
+Disallow: /config.php
+Disallow: /.htaccess
+
+Sitemap: https://yourdomain.com/sitemap.xml
