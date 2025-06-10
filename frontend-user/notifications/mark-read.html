@@ -1,0 +1,40 @@
+<?php
+require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../includes/functions.php';
+
+// Kiểm tra đăng nhập
+if (!is_logged_in()) {
+    http_response_code(401);
+    echo json_encode(['error' => 'Unauthorized']);
+    exit;
+}
+
+// Lấy dữ liệu từ request
+$data = json_decode(file_get_contents('php://input'), true);
+$notification_id = $data['id'] ?? 0;
+
+if (!$notification_id) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Invalid notification ID']);
+    exit;
+}
+
+// Kiểm tra quyền sở hữu notification
+$db = db_connect();
+$stmt = $db->prepare('SELECT id FROM notifications WHERE id = ? AND user_id = ?');
+$stmt->execute([$notification_id, $_SESSION['user_id']]);
+$notification = $stmt->fetch();
+
+if (!$notification) {
+    http_response_code(403);
+    echo json_encode(['error' => 'Forbidden']);
+    exit;
+}
+
+// Đánh dấu đã đọc
+if (mark_notification_read($notification_id)) {
+    echo json_encode(['success' => true]);
+} else {
+    http_response_code(500);
+    echo json_encode(['error' => 'Failed to mark notification as read']);
+}

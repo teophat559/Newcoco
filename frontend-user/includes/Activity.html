@@ -1,0 +1,46 @@
+<?php
+namespace FrontendUser\Includes;
+
+class Activity {
+    private $db;
+    private $userId;
+
+    public function __construct($db, $userId = null) {
+        $this->db = $db;
+        $this->userId = $userId;
+    }
+
+    public function get_user_activities($userId = null, $limit = 10) {
+        $userId = $userId ?? $this->userId;
+        if (!$userId) return [];
+
+        $stmt = $this->db->query('
+            SELECT * FROM activities
+            WHERE user_id = ?
+            ORDER BY created_at DESC
+            LIMIT ?
+        ', [$userId, $limit]);
+
+        return $stmt->fetchAll();
+    }
+
+    public function log_activity($userId, $type, $description, $relatedId = null) {
+        return $this->db->query('
+            INSERT INTO activities (user_id, type, description, related_id, created_at)
+            VALUES (?, ?, ?, ?, NOW())
+        ', [$userId, $type, $description, $relatedId]);
+    }
+
+    public function get_activity_types() {
+        return [
+            'login' => 'Đăng nhập',
+            'register' => 'Đăng ký',
+            'create_contest' => 'Tạo cuộc thi',
+            'join_contest' => 'Tham gia cuộc thi',
+            'submit_contestant' => 'Nộp thí sinh',
+            'vote' => 'Bình chọn',
+            'comment' => 'Bình luận',
+            'update_profile' => 'Cập nhật hồ sơ'
+        ];
+    }
+}

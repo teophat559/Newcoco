@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Bình chọn</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+  <h2>Bình chọn</h2>
+  <div id="vote-list"></div>
+  <script>
+    // Ví dụ fetch API lấy danh sách mục bình chọn
+    fetch('https://api.example.com/votes')
+      .then(res => res.json())
+      .then(data => {
+        const list = document.getElementById('vote-list');
+        data.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'vote-item';
+          div.innerHTML = `<h4>${item.title}</h4><button>Bình chọn</button>`;
+          list.appendChild(div);
+        });
+      });
+  </script>
+</body>
+</html>

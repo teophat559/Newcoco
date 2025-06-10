@@ -1,0 +1,58 @@
+<!-- TODO: Fetch data b?ng JS t?i d�y -->
+
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="<!-- TODO: Fetch data b?ng JS t?i d�y -->/contests">Cuộc thi</a></li>
+                <li class="breadcrumb-item">
+                    <a href="<!-- TODO: Fetch data b?ng JS t?i d�y -->/contests/view.php?id=<!-- TODO: Fetch data b?ng JS t?i d�y -->">
+                        <!-- TODO: Fetch data b?ng JS t?i d�y -->
+                    </a>
+                </li>
+                <li class="breadcrumb-item active">Đăng ký tham gia</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title mb-4">Đăng ký tham gia</h4>
+                <form method="POST" action="" enctype="multipart/form-data" onsubmit="return validateForm('register-form')">
+                    <div class="mb-3">
+                        <label for="full_name" class="form-label">Họ tên</label>
+                        <input type="text" class="form-control" id="full_name" name="full_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Số điện thoại</label>
+                        <input type="tel" class="form-control" id="phone" name="phone" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Mô tả</label>
+                        <textarea class="form-control" id="description" name="description" rows="5" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Ảnh đại diện</label>
+                        <input type="file" class="form-control" id="image" name="image" accept="image/*"
+                               onchange="previewImage(this)">
+                        <div class="mt-2">
+                            <img id="image-preview" src="" alt="" style="max-width: 200px; display: none;">
+                        </div>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Đăng ký</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- TODO: Fetch data b?ng JS t?i d�y -->

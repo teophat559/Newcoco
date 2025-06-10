@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  web:
+    image: php:8.1-apache
+    container_name: php_web
+    volumes:
+      - ./:/var/www/html
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    environment:
+      - ACCEPT_EULA=Y
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: >
+      bash -c "\
+        apt-get update && \
+        apt-get install -y libpng-dev libjpeg-dev libfreetype6-dev libonig-dev libzip-dev unixodbc-dev gnupg2 && \
+        docker-php-ext-configure gd --with-freetype --with-jpeg && \
+        docker-php-ext-install gd mbstring zip && \
+        pecl install sqlsrv pdo_sqlsrv && \
+        docker-php-ext-enable sqlsrv pdo_sqlsrv && \
+        apache2-foreground\
+      "
+
+  db:
+    image: mysql:8.0
+    container_name: admin
+    environment:
+      MYSQL_DATABASE: data_admin
+      MYSQL_USER: user_admin
+      MYSQL_PASSWORD: Mkmoi@123
+      MYSQL_ROOT_PASSWORD: Mkmoi@123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:

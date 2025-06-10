@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Tin tức mới nhất</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+  <h2>Tin tức mới nhất</h2>
+  <div id="news-list"></div>
+  <script>
+    // Ví dụ fetch API lấy danh sách tin tức
+    fetch('https://api.example.com/news')
+      .then(res => res.json())
+      .then(data => {
+        const list = document.getElementById('news-list');
+        data.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'news-item';
+          div.innerHTML = `<h4>${item.title}</h4><p>${item.summary}</p>`;
+          list.appendChild(div);
+        });
+      });
+  </script>
+</body>
+</html>

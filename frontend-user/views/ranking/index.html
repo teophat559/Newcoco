@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Bảng xếp hạng</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+  <h2>Bảng xếp hạng</h2>
+  <div id="ranking-list"></div>
+  <script>
+    // Ví dụ fetch API lấy bảng xếp hạng
+    fetch('https://api.example.com/ranking')
+      .then(res => res.json())
+      .then(data => {
+        const list = document.getElementById('ranking-list');
+        data.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'ranking-item';
+          div.innerHTML = `<strong>${item.rank}. ${item.name}</strong> - ${item.score} điểm`;
+          list.appendChild(div);
+        });
+      });
+  </script>
+</body>
+</html>

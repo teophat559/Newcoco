@@ -1,69 +1,117 @@
-# Newcoco - Hệ thống Quản lý Cuộc thi Trực tuyến
+# Contest System
 
-Newcoco là một nền tảng quản lý cuộc thi trực tuyến, cho phép người dùng tạo và tham gia các cuộc thi, bình chọn và theo dõi kết quả.
+A modern web application for managing and participating in contests.
 
-## Tính năng chính
+## Project Structure
 
-- Quản lý cuộc thi (tạo, chỉnh sửa, xóa)
-- Đăng ký thí sinh và nộp bài dự thi
-- Hệ thống bình chọn và đánh giá
-- Thông báo và cập nhật trạng thái
-- Quản lý người dùng và phân quyền
-- Giao diện người dùng thân thiện
+```
+project/
+├── frontend/                 # Frontend code
+│   ├── public/              # Static files
+│   ├── src/                # Source files
+│   └── dist/               # Build output
+│
+├── backend/                 # Backend code
+│   ├── api/                # API endpoints
+│   ├── config/            # Configuration files
+│   ├── models/            # Database models
+│   ├── controllers/       # Business logic
+│   └── middleware/        # Middleware functions
+│
+├── database/               # Database files
+├── tests/                 # Test files
+├── docs/                  # Documentation
+└── scripts/              # Utility scripts
+```
 
-## Yêu cầu hệ thống
+## Prerequisites
 
-- PHP >= 7.4
-- MySQL >= 5.7
+- PHP 8.1+
+- SQL Server 2019+
+- Node.js 18+
 - Composer
-- Node.js & NPM (cho frontend)
+- npm/yarn
 
-## Cài đặt
+## Installation
 
-1. Clone repository:
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/contest-system.git
+   cd contest-system
+   ```
+
+2. Install PHP dependencies:
+   ```bash
+   composer install
+   ```
+
+3. Install Node.js dependencies:
+   ```bash
+   cd frontend
+   npm install
+   ```
+
+4. Copy environment file:
+   ```bash
+   cp .env.example .env
+   ```
+
+5. Update environment variables in `.env`:
+   ```
+   DB_HOST=localhost
+   DB_NAME=contest_db
+   DB_USER=sa
+   DB_PASS=YourStrong@Passw0rd
+   ```
+
+6. Run database migrations:
+   ```bash
+   php scripts/setup.php
+   ```
+
+7. Build frontend:
+   ```bash
+   cd frontend
+   npm run build
+   ```
+
+## Development
+
+1. Start backend server:
+   ```bash
+   php -S localhost:8000
+   ```
+
+2. Start frontend development server:
+   ```bash
+   cd frontend
+   npm run dev
+   ```
+
+## Testing
+
+Run tests:
 ```bash
-git clone https://github.com/your-username/newcoco.git
-cd newcoco
+php tests/test_flow.php
 ```
 
-2. Cài đặt dependencies:
-```bash
-composer install
-npm install
-```
+## Deployment
 
-3. Cấu hình môi trường:
-```bash
-cp .env.example .env
-# Chỉnh sửa file .env với thông tin cấu hình của bạn
-```
+1. Deploy backend:
+   - Upload backend files to your server
+   - Configure web server (Apache/Nginx)
+   - Set up SSL certificate
 
-4. Tạo database và chạy migrations:
-```bash
-php artisan migrate
-```
+2. Deploy frontend:
+   - Build frontend: `npm run build`
+   - Deploy to Netlify/Vercel/etc.
 
-5. Khởi động server:
-```bash
-php artisan serve
-```
+## Documentation
 
-## Cấu trúc thư mục
+- [API Documentation](docs/api/README.md)
+- [Setup Guide](docs/setup/README.md)
+- [Deployment Guide](docs/deployment/README.md)
 
-```
-newcoco/
-├── backend-api/        # Backend API
-├── frontend-user/      # Frontend cho người dùng
-├── admin/             # Giao diện quản trị
-├── public/            # Assets và entry point
-├── resources/         # Views, translations, etc.
-└── storage/           # Uploads, logs, cache
-```
+## License
 
-## Đóng góp
-
-Mọi đóng góp đều được hoan nghênh! Vui lòng đọc [CONTRIBUTING.md](CONTRIBUTING.md) để biết thêm chi tiết.
-
-## Giấy phép
-
-Dự án này được cấp phép theo [MIT License](LICENSE).
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

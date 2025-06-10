@@ -1,0 +1,184 @@
+Kh√¥i ph·ª•c l·∫°i file index.html ƒë√£ x√≥a t·∫°i th∆∞ m·ª•c admin.<!-- TODO: Fetch data b?ng JS t?i d‚y -->
+
+<div class="notification-dropdown">
+    <button class="btn btn-link position-relative" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="fas fa-bell"></i>
+        <!-- TODO: Fetch data b?ng JS t?i d‚y -->
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                <!-- TODO: Fetch data b?ng JS t?i d‚y -->
+            </span>
+        <!-- TODO: Fetch data b?ng JS t?i d‚y -->
+    </button>
+    <div class="dropdown-menu dropdown-menu-end notification-menu">
+        <div class="notification-header">
+            <h6 class="mb-0">Th√¥ng b√°o</h6>
+            <!-- TODO: Fetch data b?ng JS t?i d‚y -->
+                <button class="btn btn-link btn-sm mark-all-read">ƒê√°nh d·∫•u ƒë√£ ƒë·ªçc</button>
+            <!-- TODO: Fetch data b?ng JS t?i d‚y -->
+        </div>
+        <div class="notification-body">
+            <!-- TODO: Fetch data b?ng JS t?i d‚y -->
+                <div class="text-center py-3">
+                    <i class="fas fa-bell-slash text-muted mb-2"></i>
+                    <p class="text-muted mb-0">Kh√¥ng c√≥ th√¥ng b√°o</p>
+                </div>
+            <!-- TODO: Fetch data b?ng JS t?i d‚y -->
+                <!-- TODO: Fetch data b?ng JS t?i d‚y -->
+                    <div class="notification-item <!-- TODO: Fetch data b?ng JS t?i d‚y -->"
+                         data-id="<!-- TODO: Fetch data b?ng JS t?i d‚y -->">
+                        <div class="notification-icon bg-<!-- TODO: Fetch data b?ng JS t?i d‚y -->">
+                            <i class="fas fa-<!-- TODO: Fetch data b?ng JS t?i d‚y -->"></i>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-title"><!-- TODO: Fetch data b?ng JS t?i d‚y --></div>
+                            <div class="notification-message"><!-- TODO: Fetch data b?ng JS t?i d‚y --></div>
+                            <div class="notification-time">
+                                <!-- TODO: Fetch data b?ng JS t?i d‚y -->
+                            </div>
+                        </div>
+                    </div>
+                <!-- TODO: Fetch data b?ng JS t?i d‚y -->
+            <!-- TODO: Fetch data b?ng JS t?i d‚y -->
+        </div>
+    </div>
+</div>
+
+<style>
+.notification-dropdown {
+    position: relative;
+}
+
+.notification-menu {
+    width: 320px;
+    padding: 0;
+    border: none;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    border-radius: 10px;
+}
+
+.notification-header {
+    padding: 1rem;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.notification-body {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.notification-item {
+    padding: 1rem;
+    display: flex;
+    gap: 1rem;
+    border-bottom: 1px solid #eee;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.notification-item:hover {
+    background: #f8f9fa;
+}
+
+.notification-item.unread {
+    background: #f0f7ff;
+}
+
+.notification-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.notification-content {
+    flex: 1;
+}
+
+.notification-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.notification-message {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-bottom: 0.25rem;
+}
+
+.notification-time {
+    font-size: 0.8rem;
+    color: #adb5bd;
+}
+
+.bg-success {
+    background: linear-gradient(45deg, #28a745, #218838);
+}
+
+.bg-danger {
+    background: linear-gradient(45deg, #dc3545, #c82333);
+}
+
+.bg-info {
+    background: linear-gradient(45deg, #17a2b8, #138496);
+}
+
+.bg-warning {
+    background: linear-gradient(45deg, #ffc107, #d39e00);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // X·ª≠ l√Ω click v√†o notification
+    document.querySelectorAll('.notification-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const id = this.dataset.id;
+            markNotificationRead(id);
+            this.classList.remove('unread');
+            updateUnreadCount();
+        });
+    });
+
+    // X·ª≠ l√Ω ƒë√°nh d·∫•u t·∫•t c·∫£ ƒë√£ ƒë·ªçc
+    const markAllReadBtn = document.querySelector('.mark-all-read');
+    if (markAllReadBtn) {
+        markAllReadBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            document.querySelectorAll('.notification-item.unread').forEach(item => {
+                const id = item.dataset.id;
+                markNotificationRead(id);
+                item.classList.remove('unread');
+            });
+            updateUnreadCount();
+        });
+    }
+});
+
+function markNotificationRead(id) {
+    fetch('<!-- TODO: Fetch data b?ng JS t?i d‚y -->/user/notifications/mark-read.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: id })
+    });
+}
+
+function updateUnreadCount() {
+    const badge = document.querySelector('.badge');
+    if (badge) {
+        const count = parseInt(badge.textContent) - 1;
+        if (count <= 0) {
+            badge.remove();
+        } else {
+            badge.textContent = count;
+        }
+    }
+}
+</script>

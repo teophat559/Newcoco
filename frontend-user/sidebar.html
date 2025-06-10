@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sidebar - BVOTE WEB</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    .sidebar {
+      width: 270px;
+      min-height: 100vh;
+      background: linear-gradient(160deg, #23235b 60%, #3a3a7c 100%);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      padding: 0 0 2rem 0;
+      position: fixed;
+      left: 0; top: 0;
+      z-index: 100;
+    }
+    .sidebar-header {
+      padding: 2rem 1.5rem 1rem 1.5rem;
+      text-align: left;
+    }
+    .sidebar-title {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #ffc107;
+      letter-spacing: 1px;
+      background: none;
+    }
+    .mini-stat-box {
+      background: #fff;
+      border-radius: 16px;
+      margin: 0 1.2rem 1.2rem 1.2rem;
+      padding: 1.2rem 1rem;
+      color: #23235b;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .mini-stat-title {
+      font-weight: bold;
+      color: #23235b;
+      margin-bottom: 0.7rem;
+    }
+    .mini-stat-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .mini-stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1.05rem;
+    }
+    .stat-green {
+      color: #16a34a;
+      font-weight: bold;
+    }
+    .sidebar-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 1.2rem;
+      padding: 0 1.2rem;
+    }
+    .sidebar-menu a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 500;
+      padding: 0.7rem 1rem;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: background 0.2s, color 0.2s;
+    }
+    .sidebar-menu a:hover, .sidebar-menu a.active {
+      background: #ffc107;
+      color: #23235b;
+    }
+    @media (max-width: 900px) {
+      .sidebar { width: 100vw; min-height: auto; position: static; }
+    }
+  </style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <span class="sidebar-title">👋 <span id="sidebar-username">BVOTE WEB</span></span>
+  </div>
+  <div class="mini-stat-box">
+    <div class="mini-stat-title">📊 Bảng Thống Kê Mini</div>
+    <div class="mini-stat-list">
+      <div class="mini-stat-row">
+        <span>Thí sinh</span>
+        <span class="stat-green" id="stat-contestants">0</span>
+      </div>
+      <div class="mini-stat-row">
+        <span>Cuộc thi</span>
+        <span class="stat-green" id="stat-contests">0</span>
+      </div>
+      <div class="mini-stat-row">
+        <span>Bảng xếp hạng</span>
+        <span class="stat-green" id="stat-ranking">0</span>
+      </div>
+    </div>
+  </div>
+  <nav class="sidebar-menu">
+    <a href="index.html"><i class="fas fa-home"></i> Trang chủ</a>
+    <a href="contestants/index.html"><i class="fas fa-users"></i> Thí sinh</a>
+    <a href="contests/index.html"><i class="fas fa-trophy"></i> Cuộc thi</a>
+    <a href="ranking/index.html"><i class="fas fa-chart-bar"></i> Bảng xếp hạng</a>
+    <a href="profile.html"><i class="fas fa-user"></i> Tài khoản</a>
+    <a href="logout.html"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+  </nav>
+</aside>
+<script>
+// Cập nhật tên người dùng (nếu có)
+const username = localStorage.getItem('username') || 'BVOTE WEB';
+document.getElementById('sidebar-username').innerText = username;
+// Fetch số liệu động (AJAX hoặc WebSocket)
+fetch('https://api.example.com/statistics')
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById('stat-contestants').innerText = data.contestants || 0;
+    document.getElementById('stat-contests').innerText = data.contests || 0;
+    document.getElementById('stat-ranking').innerText = data.ranking || 0;
+  });
+</script>
+</body>
+</html>

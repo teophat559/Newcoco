@@ -1,0 +1,143 @@
+#admin-notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 400px;
+}
+
+.admin-notification {
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    animation: slideIn 0.3s ease-out;
+    border-left: 4px solid #4CAF50;
+    transition: all 0.3s ease;
+}
+
+.admin-notification.notification-deleting {
+    transform: translateX(100%);
+    opacity: 0;
+}
+
+.notification-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.notification-emoji {
+    font-size: 24px;
+}
+
+.notification-message {
+    font-size: 14px;
+    color: #333;
+    flex: 1;
+}
+
+.notification-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-edit,
+.btn-delete {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    color: #666;
+    transition: color 0.2s;
+}
+
+.btn-edit:hover {
+    color: #2196F3;
+}
+
+.btn-delete:hover {
+    color: #F44336;
+}
+
+.notification-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #666;
+}
+
+.status-badge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+}
+
+.status-new {
+    background: #E3F2FD;
+    color: #1976D2;
+}
+
+.status-edited {
+    background: #FFF3E0;
+    color: #F57C00;
+}
+
+.notification-time {
+    font-size: 11px;
+    color: #999;
+}
+
+/* Notification types */
+.notification-user_login { border-left-color: #4CAF50; }
+.notification-admin_login { border-left-color: #2196F3; }
+.notification-new_visitor { border-left-color: #FF9800; }
+.notification-user_register { border-left-color: #9C27B0; }
+.notification-admin_action { border-left-color: #F44336; }
+.notification-error_alert { border-left-color: #FF0000; }
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    #admin-notification-container {
+        left: 20px;
+        right: 20px;
+        max-width: none;
+    }
+
+    .admin-notification {
+        padding: 12px;
+    }
+
+    .notification-emoji {
+        font-size: 20px;
+    }
+
+    .notification-message {
+        font-size: 13px;
+    }
+
+    .notification-actions {
+        gap: 4px;
+    }
+
+    .btn-edit,
+    .btn-delete {
+        padding: 2px;
+    }
+}

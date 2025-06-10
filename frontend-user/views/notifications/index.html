@@ -1,0 +1,100 @@
+<!-- TODO: Fetch data b?ng JS t?i d‚y -->
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-4">Th√¥ng b√°o</h1>
+
+            <!-- Notifications List -->
+            <div class="card">
+                <div class="list-group list-group-flush">
+                    <!-- TODO: Fetch data b?ng JS t?i d‚y -->
+                    <div class="list-group-item text-center py-5">
+                        <i class="fas fa-bell fa-3x text-muted mb-3"></i>
+                        <p class="mb-0">B·∫°n ch∆∞a c√≥ th√¥ng b√°o n√†o</p>
+                    </div>
+                    <!-- TODO: Fetch data b?ng JS t?i d‚y -->
+                        <!-- TODO: Fetch data b?ng JS t?i d‚y -->
+                        <div class="list-group-item <!-- TODO: Fetch data b?ng JS t?i d‚y -->">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-1"><!-- TODO: Fetch data b?ng JS t?i d‚y --></h5>
+                                    <p class="mb-1"><!-- TODO: Fetch data b?ng JS t?i d‚y --></p>
+                                    <small class="text-muted">
+                                        <!-- TODO: Fetch data b?ng JS t?i d‚y -->
+                                    </small>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <!-- TODO: Fetch data b?ng JS t?i d‚y -->
+                                    <button class="btn btn-sm btn-outline-primary me-2" onclick="markAsRead(<!-- TODO: Fetch data b?ng JS t?i d‚y -->)">
+                                        ƒê√°nh d·∫•u ƒë√£ ƒë·ªçc
+                                    </button>
+                                    <!-- TODO: Fetch data b?ng JS t?i d‚y -->
+                                    <!-- TODO: Fetch data b?ng JS t?i d‚y -->
+                                    <a href="<!-- TODO: Fetch data b?ng JS t?i d‚y -->" class="btn btn-sm btn-primary">
+                                        Xem chi ti·∫øt
+                                    </a>
+                                    <!-- TODO: Fetch data b?ng JS t?i d‚y -->
+                                </div>
+                            </div>
+                        </div>
+                        <!-- TODO: Fetch data b?ng JS t?i d‚y -->
+                    <!-- TODO: Fetch data b?ng JS t?i d‚y -->
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <!-- TODO: Fetch data b?ng JS t?i d‚y -->
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <!-- TODO: Fetch data b?ng JS t?i d‚y -->
+                    <li class="page-item">
+                        <a class="page-link" href="?page=<!-- TODO: Fetch data b?ng JS t?i d‚y -->">Tr∆∞·ªõc</a>
+                    </li>
+                    <!-- TODO: Fetch data b?ng JS t?i d‚y -->
+
+                    <!-- TODO: Fetch data b?ng JS t?i d‚y -->
+                    <li class="page-item <!-- TODO: Fetch data b?ng JS t?i d‚y -->">
+                        <a class="page-link" href="?page=<!-- TODO: Fetch data b?ng JS t?i d‚y -->"><!-- TODO: Fetch data b?ng JS t?i d‚y --></a>
+                    </li>
+                    <!-- TODO: Fetch data b?ng JS t?i d‚y -->
+
+                    <!-- TODO: Fetch data b?ng JS t?i d‚y -->
+                    <li class="page-item">
+                        <a class="page-link" href="?page=<!-- TODO: Fetch data b?ng JS t?i d‚y -->">Sau</a>
+                    </li>
+                    <!-- TODO: Fetch data b?ng JS t?i d‚y -->
+                </ul>
+            </nav>
+            <!-- TODO: Fetch data b?ng JS t?i d‚y -->
+        </div>
+    </div>
+</div>
+
+<script>
+function markAsRead(notificationId) {
+    fetch('/ajax/mark_notification_read.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            notification_id: notificationId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message || 'C√≥ l·ªói x·∫£y ra');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('C√≥ l·ªói x·∫£y ra');
+    });
+}
+</script>
+
+<!-- TODO: Fetch data b?ng JS t?i d‚y -->

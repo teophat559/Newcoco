@@ -1,0 +1,18 @@
+<?php
+require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../includes/functions.php';
+
+// Xóa remember token nếu có
+if (isset($_COOKIE['remember_token'])) {
+    $pdo = get_db_connection();
+    $stmt = $pdo->prepare('DELETE FROM remember_tokens WHERE token = ?');
+    $stmt->execute([$_COOKIE['remember_token']]);
+    setcookie('remember_token', '', time() - 3600, '/', '', true, true);
+}
+
+// Xóa session
+session_destroy();
+
+// Chuyển về trang đăng nhập
+set_flash_message('success', 'Đăng xuất thành công!');
+redirect(SITE_URL . '/auth/login.php');

@@ -1,0 +1,1278 @@
+<?php
+// Prevent direct access
+if (!defined('SITE_URL')) {
+    die('Direct access not permitted');
+}
+
+/**
+ * Kết nối database
+ */
+function db_connect() {
+    try {
+        $conn = new PDO(
+            "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4",
+            DB_USER,
+            DB_PASS,
+            [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false
+            ]
+        );
+        return $conn;
+    } catch (PDOException $e) {
+        error_log("Database connection failed: " . $e->getMessage());
+        header('Location: ' . SITE_URL . '/500.php');
+        exit;
+    }
+}
+
+/**
+ * Tạo CSRF token
+ */
+function generate_csrf_token() {
+    if (!isset($_SESSION[CSRF_TOKEN_NAME])) {
+        $_SESSION[CSRF_TOKEN_NAME] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION[CSRF_TOKEN_NAME];
+}
+
+/**
+ * Kiểm tra CSRF token
+ */
+function verify_csrf_token($token) {
+    return isset($_SESSION[CSRF_TOKEN_NAME]) && hash_equals($_SESSION[CSRF_TOKEN_NAME], $token);
+}
+
+/**
+ * Xử lý upload file
+ */
+function handle_file_upload($file, $allowed_types = ALLOWED_EXTENSIONS, $max_size = MAX_FILE_SIZE) {
+    // Kiểm tra lỗi upload
+    if ($file['error'] !== UPLOAD_ERR_OK) {
+        throw new Exception('Upload failed: ' . $file['error']);
+    }
+
+    // Kiểm tra kích thước
+    if ($file['size'] > $max_size) {
+        throw new Exception('File too large');
+    }
+
+    // Kiểm tra loại file
+    $file_type = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    if (!in_array($file_type, $allowed_types)) {
+        throw new Exception('Invalid file type');
+    }
+
+    // Tạo tên file mới
+    $new_filename = uniqid() . '.' . $file_type;
+    $upload_path = UPLOAD_DIR . '/' . $new_filename;
+
+    // Upload file
+    if (!move_uploaded_file($file['tmp_name'], $upload_path)) {
+        throw new Exception('Failed to move uploaded file');
+    }
+
+    return $new_filename;
+}
+
+/**
+ * Xử lý input
+ */
+function sanitize_input($data) {
+    $data = trim($data);
+    $data = stripslashes($data);
+    $data = htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
+    return $data;
+}
+
+/**
+ * Kiểm tra đăng nhập
+ */
+function check_login() {
+    if (!isset($_SESSION['user_id'])) {
+        header('Location: ' . SITE_URL . '/auth/login.php');
+        exit;
+    }
+}
+
+/**
+ * Kiểm tra quyền admin
+ */
+function check_admin() {
+    if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
+        header('Location: ' . SITE_URL . '/403.php');
+        exit;
+    }
+}
+
+/**
+ * Format số
+ */
+function format_number($number) {
+    return number_format($number, 0, ',', '.');
+}
+
+/**
+ * Format ngày giờ
+ */
+function format_datetime($datetime) {
+    return date('d/m/Y H:i', strtotime($datetime));
+}
+
+/**
+ * Format ngày
+ */
+function format_date($date) {
+    return date('d/m/Y', strtotime($date));
+}
+
+/**
+ * Tạo URL
+ */
+function create_url($path = '') {
+    return SITE_URL . '/' . ltrim($path, '/');
+}
+
+/**
+ * Tạo thông báo
+ */
+function create_alert($message, $type = 'success') {
+    return '<div class="alert alert-' . $type . ' alert-dismissible fade show" role="alert">
+        ' . $message . '
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>';
+}
+
+/**
+ * Tạo breadcrumb
+ */
+function create_breadcrumb($items) {
+    $breadcrumb = '<nav aria-label="breadcrumb"><ol class="breadcrumb">';
+
+    foreach ($items as $key => $item) {
+        if ($key === array_key_last($items)) {
+            $breadcrumb .= '<li class="breadcrumb-item active" aria-current="page">' . $item . '</li>';
+        } else {
+            $breadcrumb .= '<li class="breadcrumb-item"><a href="' . $key . '">' . $item . '</a></li>';
+        }
+    }
+
+    $breadcrumb .= '</ol></nav>';
+    return $breadcrumb;
+}
+
+/**
+ * Tạo meta tags
+ */
+function create_meta_tags($title, $description = '', $keywords = '') {
+    $meta = '<title>' . $title . ' - ' . SITE_NAME . '</title>';
+
+    if ($description) {
+        $meta .= '<meta name="description" content="' . $description . '">';
+    }
+
+    if ($keywords) {
+        $meta .= '<meta name="keywords" content="' . $keywords . '">';
+    }
+
+    return $meta;
+}
+
+/**
+ * Tạo social meta tags
+ */
+function create_social_meta_tags($title, $description = '', $image = '') {
+    $meta = '';
+
+    // Open Graph
+    $meta .= '<meta property="og:title" content="' . $title . '">';
+    $meta .= '<meta property="og:description" content="' . $description . '">';
+    if ($image) {
+        $meta .= '<meta property="og:image" content="' . $image . '">';
+    }
+    $meta .= '<meta property="og:url" content="' . $_SERVER['REQUEST_URI'] . '">';
+    $meta .= '<meta property="og:type" content="website">';
+
+    // Twitter Card
+    $meta .= '<meta name="twitter:card" content="summary_large_image">';
+    $meta .= '<meta name="twitter:title" content="' . $title . '">';
+    $meta .= '<meta name="twitter:description" content="' . $description . '">';
+    if ($image) {
+        $meta .= '<meta name="twitter:image" content="' . $image . '">';
+    }
+
+    return $meta;
+}
+
+/**
+ * Tạo canonical URL
+ */
+function create_canonical_url($url = '') {
+    return '<link rel="canonical" href="' . SITE_URL . '/' . ltrim($url, '/') . '">';
+}
+
+/**
+ * Tạo favicon
+ */
+function create_favicon() {
+    return '<link rel="icon" type="image/x-icon" href="' . SITE_URL . '/assets/img/favicon.ico">';
+}
+
+/**
+ * Tạo manifest
+ */
+function create_manifest() {
+    return '<link rel="manifest" href="' . SITE_URL . '/manifest.json">';
+}
+
+/**
+ * Tạo theme color
+ */
+function create_theme_color($color = '#ffffff') {
+    return '<meta name="theme-color" content="' . $color . '">';
+}
+
+/**
+ * Tạo viewport
+ */
+function create_viewport() {
+    return '<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">';
+}
+
+/**
+ * Tạo charset
+ */
+function create_charset() {
+    return '<meta charset="UTF-8">';
+}
+
+/**
+ * Tạo X-UA-Compatible
+ */
+function create_xua_compatible() {
+    return '<meta http-equiv="X-UA-Compatible" content="IE=edge">';
+}
+
+/**
+ * Tạo robots
+ */
+function create_robots() {
+    return '<meta name="robots" content="index, follow">';
+}
+
+/**
+ * Tạo author
+ */
+function create_author() {
+    return '<meta name="author" content="' . SITE_NAME . '">';
+}
+
+/**
+ * Tạo generator
+ */
+function create_generator() {
+    return '<meta name="generator" content="' . SITE_NAME . '">';
+}
+
+/**
+ * Tạo copyright
+ */
+function create_copyright() {
+    return '<meta name="copyright" content="' . SITE_NAME . '">';
+}
+
+/**
+ * Tạo language
+ */
+function create_language() {
+    return '<meta name="language" content="vi">';
+}
+
+/**
+ * Tạo geo
+ */
+function create_geo() {
+    return '<meta name="geo.region" content="VN">';
+}
+
+/**
+ * Tạo revisit
+ */
+function create_revisit() {
+    return '<meta name="revisit-after" content="1 days">';
+}
+
+/**
+ * Tạo distribution
+ */
+function create_distribution() {
+    return '<meta name="distribution" content="Global">';
+}
+
+/**
+ * Tạo rating
+ */
+function create_rating() {
+    return '<meta name="rating" content="General">';
+}
+
+/**
+ * Tạo classification
+ */
+function create_classification() {
+    return '<meta name="classification" content="Business">';
+}
+
+/**
+ * Tạo category
+ */
+function create_category() {
+    return '<meta name="category" content="Business">';
+}
+
+/**
+ * Tạo coverage
+ */
+function create_coverage() {
+    return '<meta name="coverage" content="Worldwide">';
+}
+
+/**
+ * Tạo target
+ */
+function create_target() {
+    return '<meta name="target" content="all">';
+}
+
+/**
+ * Tạo abstract
+ */
+function create_abstract() {
+    return '<meta name="abstract" content="' . SITE_DESCRIPTION . '">';
+}
+
+/**
+ * Tạo topic
+ */
+function create_topic() {
+    return '<meta name="topic" content="Business">';
+}
+
+/**
+ * Tạo summary
+ */
+function create_summary() {
+    return '<meta name="summary" content="' . SITE_DESCRIPTION . '">';
+}
+
+// Authentication functions
+function is_logged_in() {
+    return isset($_SESSION['user_id']);
+}
+
+function get_current_user() {
+    if (!is_logged_in()) {
+        return null;
+    }
+    return $_SESSION['user'];
+}
+
+function require_login() {
+    if (!is_logged_in()) {
+        header('Location: ' . SITE_URL . '/auth/login.php');
+        exit;
+    }
+}
+
+/**
+ * Lấy danh sách thông báo của người dùng
+ */
+function get_user_notifications($user_id, $limit = 10, $offset = 0) {
+    try {
+        $db = db_connect();
+        $stmt = $db->prepare("
+            SELECT * FROM notifications
+            WHERE user_id = :user_id
+            ORDER BY created_at DESC
+            LIMIT :limit OFFSET :offset
+        ");
+        $stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    } catch (PDOException $e) {
+        error_log("Error getting user notifications: " . $e->getMessage());
+        return [];
+    }
+}
+
+function count_unread_notifications($user_id) {
+    $pdo = get_db_connection();
+    $stmt = $pdo->prepare('
+        SELECT COUNT(*) FROM notifications
+        WHERE user_id = ? AND is_read = 0
+    ');
+    $stmt->execute([$user_id]);
+    return $stmt->fetchColumn();
+}
+
+function mark_notification_read($notification_id) {
+    $pdo = get_db_connection();
+    $stmt = $pdo->prepare('
+        UPDATE notifications
+        SET is_read = 1
+        WHERE id = ? AND user_id = ?
+    ');
+    return $stmt->execute([$notification_id, $_SESSION['user_id']]);
+}
+
+function mark_all_notifications_read($user_id) {
+    $pdo = get_db_connection();
+    $stmt = $pdo->prepare('
+        UPDATE notifications
+        SET is_read = 1
+        WHERE user_id = ?
+    ');
+    return $stmt->execute([$user_id]);
+}
+
+// Contest functions
+function get_active_contests() {
+    $pdo = get_db_connection();
+    $stmt = $pdo->prepare('
+        SELECT * FROM contests
+        WHERE status = "active"
+        AND end_date > NOW()
+        ORDER BY created_at DESC
+    ');
+    $stmt->execute();
+    return $stmt->fetchAll();
+}
+
+/**
+ * Lấy kết nối database
+ */
+function get_db_connection() {
+    static $pdo = null;
+    if ($pdo === null) {
+        try {
+            $dsn = sprintf("mysql:host=%s;dbname=%s;charset=utf8mb4", DB_HOST, DB_NAME);
+            $pdo = new PDO($dsn, DB_USER, DB_PASS, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false,
+            ]);
+        } catch (PDOException $e) {
+            throw new RuntimeException('Database connection failed: ' . $e->getMessage());
+        }
+    }
+    return $pdo;
+}
+
+function get_contest($contest_id) {
+    $pdo = get_db_connection();
+    $stmt = $pdo->prepare('SELECT * FROM contests WHERE id = ?');
+    $stmt->execute([$contest_id]);
+    return $stmt->fetch();
+}
+
+function get_contest_contestants($contest_id) {
+    $pdo = get_db_connection();
+    $stmt = $pdo->prepare('
+        SELECT * FROM contestants
+        WHERE contest_id = ?
+        AND status = "approved"
+        ORDER BY vote_count DESC
+    ');
+    $stmt->execute([$contest_id]);
+    return $stmt->fetchAll();
+}
+
+// Vote functions
+function has_voted($user_id, $contest_id) {
+    $pdo = get_db_connection();
+    $stmt = $pdo->prepare('
+        SELECT COUNT(*) FROM votes
+        WHERE user_id = ? AND contest_id = ?
+    ');
+    $stmt->execute([$user_id, $contest_id]);
+    return $stmt->fetchColumn() > 0;
+}
+
+function get_user_votes($user_id) {
+    $pdo = get_db_connection();
+    $stmt = $pdo->prepare('
+        SELECT v.*, c.title as contest_title, ct.full_name as contestant_name
+        FROM votes v
+        JOIN contests c ON v.contest_id = c.id
+        JOIN contestants ct ON v.contestant_id = ct.id
+        WHERE v.user_id = ?
+        ORDER BY v.created_at DESC
+    ');
+    $stmt->execute([$user_id]);
+    return $stmt->fetchAll();
+}
+
+// Utility functions
+function time_elapsed_string($datetime) {
+    $now = new DateTime;
+    $ago = new DateTime($datetime);
+    $diff = $now->diff($ago);
+
+    if ($diff->y > 0) {
+        return $diff->y . ' năm trước';
+    }
+    if ($diff->m > 0) {
+        return $diff->m . ' tháng trước';
+    }
+    if ($diff->d > 0) {
+        return $diff->d . ' ngày trước';
+    }
+    if ($diff->h > 0) {
+        return $diff->h . ' giờ trước';
+    }
+    if ($diff->i > 0) {
+        return $diff->i . ' phút trước';
+    }
+    return 'Vừa xong';
+}
+
+function format_file_size($bytes) {
+    $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    $bytes = max($bytes, 0);
+    $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+    $pow = min($pow, count($units) - 1);
+    $bytes /= pow(1024, $pow);
+    return round($bytes, 2) . ' ' . $units[$pow];
+}
+
+/**
+ * Tạo cuộc thi mới
+ */
+function create_contest($data) {
+    global $conn;
+
+    $sql = "INSERT INTO contests (title, description, start_date, end_date, max_participants, rules, prizes, banner, created_by, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ssssisssi",
+        $data['title'],
+        $data['description'],
+        $data['start_date'],
+        $data['end_date'],
+        $data['max_participants'],
+        $data['rules'],
+        $data['prizes'],
+        $data['banner'],
+        $data['created_by']
+    );
+
+    if ($stmt->execute()) {
+        return $stmt->insert_id;
+    }
+    return false;
+}
+
+/**
+ * Lấy thông tin cuộc thi theo ID
+ */
+function get_contest_by_id($id) {
+    global $conn;
+
+    $sql = "SELECT * FROM contests WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    return $result->fetch_assoc();
+}
+
+/**
+ * Lấy badge màu cho trạng thái cuộc thi
+ */
+function get_contest_status_badge($status) {
+    switch ($status) {
+        case 'draft':
+            return 'secondary';
+        case 'upcoming':
+            return 'info';
+        case 'active':
+            return 'success';
+        case 'ended':
+            return 'danger';
+        default:
+            return 'secondary';
+    }
+}
+
+/**
+ * Lấy text cho trạng thái cuộc thi
+ */
+function get_contest_status_text($status) {
+    switch ($status) {
+        case 'draft':
+            return 'Nháp';
+        case 'upcoming':
+            return 'Sắp diễn ra';
+        case 'active':
+            return 'Đang diễn ra';
+        case 'ended':
+            return 'Đã kết thúc';
+        default:
+            return 'Không xác định';
+    }
+}
+
+/**
+ * Lấy tổng số cuộc thi của người dùng
+ */
+function get_user_total_contests($user_id) {
+    global $conn;
+
+    $sql = "SELECT COUNT(*) as total FROM contests WHERE created_by = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+
+    return $row['total'];
+}
+
+/**
+ * Lấy số cuộc thi đang diễn ra của người dùng
+ */
+function get_user_active_contests($user_id) {
+    global $conn;
+
+    $sql = "SELECT COUNT(*) as total FROM contests
+            WHERE created_by = ? AND status = 'active'";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+
+    return $row['total'];
+}
+
+/**
+ * Lấy tổng số lần tham gia của người dùng
+ */
+function get_user_total_participations($user_id) {
+    global $conn;
+
+    $sql = "SELECT COUNT(*) as total FROM contest_participants WHERE user_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+
+    return $row['total'];
+}
+
+/**
+ * Lấy tổng số giải thưởng của người dùng
+ */
+function get_user_total_wins($user_id) {
+    global $conn;
+
+    $sql = "SELECT COUNT(*) as total FROM contest_winners WHERE user_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+
+    return $row['total'];
+}
+
+/**
+ * Lấy danh sách cuộc thi đang tham gia của người dùng
+ */
+function get_user_active_participations($user_id, $limit = 5) {
+    global $conn;
+
+    $sql = "SELECT c.*, cp.status, cp.joined_at
+            FROM contests c
+            INNER JOIN contest_participants cp ON c.id = cp.contest_id
+            WHERE cp.user_id = ? AND c.status = 'active'
+            ORDER BY cp.joined_at DESC
+            LIMIT ?";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ii", $user_id, $limit);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $participations = [];
+    while ($row = $result->fetch_assoc()) {
+        $participations[] = $row;
+    }
+
+    return $participations;
+}
+
+/**
+ * Lấy tổng số thông báo của người dùng
+ */
+function get_user_total_notifications($user_id) {
+    global $conn;
+
+    $sql = "SELECT COUNT(*) as total FROM notifications WHERE user_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+
+    return $row['total'];
+}
+
+/**
+ * Lấy danh sách thí sinh
+ */
+function get_contestants($contest_id = 0, $limit = 20, $offset = 0) {
+    global $conn;
+
+    $sql = "SELECT u.*, cp.status, cp.joined_at, c.title as contest_title, c.id as contest_id
+            FROM users u
+            INNER JOIN contest_participants cp ON u.id = cp.user_id
+            INNER JOIN contests c ON cp.contest_id = c.id";
+
+    if ($contest_id > 0) {
+        $sql .= " WHERE c.id = ?";
+    }
+
+    $sql .= " ORDER BY cp.joined_at DESC LIMIT ? OFFSET ?";
+
+    $stmt = $conn->prepare($sql);
+    if ($contest_id > 0) {
+        $stmt->bind_param("iii", $contest_id, $limit, $offset);
+    } else {
+        $stmt->bind_param("ii", $limit, $offset);
+    }
+
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $contestants = [];
+    while ($row = $result->fetch_assoc()) {
+        $contestants[] = $row;
+    }
+
+    return $contestants;
+}
+
+/**
+ * Lấy tổng số thí sinh
+ */
+function get_total_contestants($contest_id = 0) {
+    global $conn;
+
+    $sql = "SELECT COUNT(*) as total
+            FROM contest_participants cp";
+
+    if ($contest_id > 0) {
+        $sql .= " WHERE cp.contest_id = ?";
+    }
+
+    $stmt = $conn->prepare($sql);
+    if ($contest_id > 0) {
+        $stmt->bind_param("i", $contest_id);
+    }
+
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+
+    return $row['total'];
+}
+
+/**
+ * Lấy badge màu cho trạng thái thí sinh
+ */
+function get_contestant_status_badge($status) {
+    switch ($status) {
+        case 'pending':
+            return 'warning';
+        case 'approved':
+            return 'success';
+        case 'rejected':
+            return 'danger';
+        case 'completed':
+            return 'info';
+        default:
+            return 'secondary';
+    }
+}
+
+/**
+ * Lấy text cho trạng thái thí sinh
+ */
+function get_contestant_status_text($status) {
+    switch ($status) {
+        case 'pending':
+            return 'Chờ duyệt';
+        case 'approved':
+            return 'Đã duyệt';
+        case 'rejected':
+            return 'Từ chối';
+        case 'completed':
+            return 'Hoàn thành';
+        default:
+            return 'Không xác định';
+    }
+}
+
+/**
+ * Tạo thông báo flash
+ */
+function set_flash_message($message, $type = 'success') {
+    $_SESSION['flash_message'] = [
+        'message' => $message,
+        'type' => $type
+    ];
+}
+
+/**
+ * Lấy thông báo flash
+ */
+function get_flash_message() {
+    if (isset($_SESSION['flash_message'])) {
+        $message = $_SESSION['flash_message'];
+        unset($_SESSION['flash_message']);
+        return $message;
+    }
+    return null;
+}
+
+/**
+ * Kiểm tra quyền truy cập
+ */
+function check_permission($permission) {
+    if (!is_logged_in()) {
+        return false;
+    }
+    return in_array($permission, $_SESSION['user']['permissions']);
+}
+
+/**
+ * Chuyển hướng với thông báo
+ */
+function redirect_with_message($url, $message, $type = 'success') {
+    set_flash_message($message, $type);
+    header("Location: $url");
+    exit;
+}
+
+/**
+ * Tạo slug từ chuỗi
+ */
+function create_slug($string) {
+    $string = strtolower($string);
+    $string = preg_replace('/[^a-z0-9\s-]/', '', $string);
+    $string = preg_replace('/[\s-]+/', ' ', $string);
+    $string = preg_replace('/\s/', '-', $string);
+    return $string;
+}
+
+/**
+ * Kiểm tra file upload
+ */
+function validate_upload($file, $allowed_types, $max_size) {
+    $errors = [];
+
+    if ($file['error'] !== UPLOAD_ERR_OK) {
+        $errors[] = 'Lỗi upload file';
+        return $errors;
+    }
+
+    if ($file['size'] > $max_size) {
+        $errors[] = 'File quá lớn';
+    }
+
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mime_type = finfo_file($finfo, $file['tmp_name']);
+    finfo_close($finfo);
+
+    if (!in_array($mime_type, $allowed_types)) {
+        $errors[] = 'Định dạng file không được hỗ trợ';
+    }
+
+    return $errors;
+}
+
+/**
+ * Upload file
+ */
+function upload_file($file, $directory = UPLOAD_DIR) {
+    if (!isset($file['error']) || is_array($file['error'])) {
+        throw new RuntimeException('Invalid file parameters');
+    }
+
+    switch ($file['error']) {
+        case UPLOAD_ERR_OK:
+            break;
+        case UPLOAD_ERR_INI_SIZE:
+        case UPLOAD_ERR_FORM_SIZE:
+            throw new RuntimeException('File size exceeds limit');
+        case UPLOAD_ERR_PARTIAL:
+            throw new RuntimeException('File was only partially uploaded');
+        case UPLOAD_ERR_NO_FILE:
+            throw new RuntimeException('No file was uploaded');
+        case UPLOAD_ERR_NO_TMP_DIR:
+            throw new RuntimeException('Missing temporary folder');
+        case UPLOAD_ERR_CANT_WRITE:
+            throw new RuntimeException('Failed to write file to disk');
+        case UPLOAD_ERR_EXTENSION:
+            throw new RuntimeException('A PHP extension stopped the file upload');
+        default:
+            throw new RuntimeException('Unknown upload error');
+    }
+
+    if ($file['size'] > MAX_FILE_SIZE) {
+        throw new RuntimeException('File size exceeds limit');
+    }
+
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+
+    if (!in_array($ext, ALLOWED_EXTENSIONS)) {
+        throw new RuntimeException('Invalid file format');
+    }
+
+    $filename = sprintf('%s.%s', sha1_file($file['tmp_name']), $ext);
+    $filepath = $directory . $filename;
+
+    if (!move_uploaded_file($file['tmp_name'], $filepath)) {
+        throw new RuntimeException('Failed to move uploaded file');
+    }
+
+    return $filename;
+}
+
+/**
+ * Xóa file
+ */
+function delete_file($path) {
+    if (file_exists($path)) {
+        return unlink($path);
+    }
+    return false;
+}
+
+/**
+ * Tạo thumbnail
+ */
+function create_thumbnail($source_path, $destination_path, $width, $height) {
+    $source_image = imagecreatefromstring(file_get_contents($source_path));
+    $source_width = imagesx($source_image);
+    $source_height = imagesy($source_image);
+
+    $thumbnail = imagecreatetruecolor($width, $height);
+    imagecopyresampled($thumbnail, $source_image, 0, 0, 0, 0, $width, $height, $source_width, $source_height);
+
+    imagejpeg($thumbnail, $destination_path, 90);
+    imagedestroy($source_image);
+    imagedestroy($thumbnail);
+}
+
+/**
+ * Lấy danh sách cuộc thi sắp diễn ra
+ */
+function get_upcoming_contests($limit = 5) {
+    try {
+        $db = db_connect();
+        $stmt = $db->prepare("
+            SELECT c.*, u.username as creator_name,
+                   (SELECT COUNT(*) FROM contestants WHERE contest_id = c.id) as contestant_count
+            FROM contests c
+            JOIN users u ON c.created_by = u.id
+            WHERE c.status = 'upcoming'
+            AND c.start_date > NOW()
+            ORDER BY c.start_date ASC
+            LIMIT :limit
+        ");
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    } catch (PDOException $e) {
+        error_log("Error getting upcoming contests: " . $e->getMessage());
+        return [];
+    }
+}
+
+/**
+ * Lấy danh sách cuộc thi nổi bật
+ */
+function get_featured_contests($limit = 5) {
+    try {
+        $db = db_connect();
+        $stmt = $db->prepare("
+            SELECT c.*, u.username as creator_name,
+                   (SELECT COUNT(*) FROM contestants WHERE contest_id = c.id) as contestant_count,
+                   (SELECT COUNT(*) FROM votes WHERE contest_id = c.id) as vote_count
+            FROM contests c
+            JOIN users u ON c.created_by = u.id
+            WHERE c.status = 'active'
+            AND c.is_featured = 1
+            ORDER BY c.created_at DESC
+            LIMIT :limit
+        ");
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    } catch (PDOException $e) {
+        error_log("Error getting featured contests: " . $e->getMessage());
+        return [];
+    }
+}
+
+/**
+ * Lấy danh sách cuộc thi phổ biến
+ */
+function get_popular_contests($limit = 5) {
+    try {
+        $db = db_connect();
+        $stmt = $db->prepare("
+            SELECT c.*, u.username as creator_name,
+                   (SELECT COUNT(*) FROM contestants WHERE contest_id = c.id) as contestant_count,
+                   (SELECT COUNT(*) FROM votes WHERE contest_id = c.id) as vote_count
+            FROM contests c
+            JOIN users u ON c.created_by = u.id
+            WHERE c.status = 'active'
+            ORDER BY vote_count DESC, contestant_count DESC
+            LIMIT :limit
+        ");
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    } catch (PDOException $e) {
+        error_log("Error getting popular contests: " . $e->getMessage());
+        return [];
+    }
+}
+
+/**
+ * Lấy thống kê tổng quan của trang web
+ */
+function get_site_statistics() {
+    try {
+        $db = db_connect();
+        $stats = [];
+
+        // Tổng số cuộc thi
+        $stmt = $db->query("SELECT COUNT(*) FROM contests");
+        $stats['total_contests'] = $stmt->fetchColumn();
+
+        // Tổng số người dùng
+        $stmt = $db->query("SELECT COUNT(*) FROM users");
+        $stats['total_users'] = $stmt->fetchColumn();
+
+        // Tổng số thí sinh
+        $stmt = $db->query("SELECT COUNT(*) FROM contestants");
+        $stats['total_contestants'] = $stmt->fetchColumn();
+
+        // Tổng số lượt bình chọn
+        $stmt = $db->query("SELECT COUNT(*) FROM votes");
+        $stats['total_votes'] = $stmt->fetchColumn();
+
+        // Cuộc thi đang diễn ra
+        $stmt = $db->query("SELECT COUNT(*) FROM contests WHERE status = 'active'");
+        $stats['active_contests'] = $stmt->fetchColumn();
+
+        // Cuộc thi sắp diễn ra
+        $stmt = $db->query("SELECT COUNT(*) FROM contests WHERE status = 'upcoming'");
+        $stats['upcoming_contests'] = $stmt->fetchColumn();
+
+        return $stats;
+    } catch (PDOException $e) {
+        error_log("Error getting site statistics: " . $e->getMessage());
+        return [
+            'total_contests' => 0,
+            'total_users' => 0,
+            'total_contestants' => 0,
+            'total_votes' => 0,
+            'active_contests' => 0,
+            'upcoming_contests' => 0
+        ];
+    }
+}
+
+/**
+ * Tạo phân trang
+ */
+function create_pagination($total_items, $items_per_page, $current_page, $url_pattern) {
+    $total_pages = ceil($total_items / $items_per_page);
+    $pagination = [];
+
+    if ($total_pages <= 1) {
+        return $pagination;
+    }
+
+    // Previous page
+    if ($current_page > 1) {
+        $pagination[] = [
+            'url' => sprintf($url_pattern, $current_page - 1),
+            'label' => '&laquo;',
+            'active' => false
+        ];
+    }
+
+    // Page numbers
+    $start = max(1, $current_page - 2);
+    $end = min($total_pages, $current_page + 2);
+
+    if ($start > 1) {
+        $pagination[] = [
+            'url' => sprintf($url_pattern, 1),
+            'label' => '1',
+            'active' => false
+        ];
+        if ($start > 2) {
+            $pagination[] = [
+                'url' => '#',
+                'label' => '...',
+                'active' => false
+            ];
+        }
+    }
+
+    for ($i = $start; $i <= $end; $i++) {
+        $pagination[] = [
+            'url' => sprintf($url_pattern, $i),
+            'label' => $i,
+            'active' => $i === $current_page
+        ];
+    }
+
+    if ($end < $total_pages) {
+        if ($end < $total_pages - 1) {
+            $pagination[] = [
+                'url' => '#',
+                'label' => '...',
+                'active' => false
+            ];
+        }
+        $pagination[] = [
+            'url' => sprintf($url_pattern, $total_pages),
+            'label' => $total_pages,
+            'active' => false
+        ];
+    }
+
+    // Next page
+    if ($current_page < $total_pages) {
+        $pagination[] = [
+            'url' => sprintf($url_pattern, $current_page + 1),
+            'label' => '&raquo;',
+            'active' => false
+        ];
+    }
+
+    return $pagination;
+}
+
+/**
+ * Lấy thông tin thí sinh
+ */
+function get_contestant($contestant_id) {
+    $db = get_db_connection();
+    $stmt = $db->prepare("
+        SELECT c.*, co.title as contest_title
+        FROM contestants c
+        LEFT JOIN contests co ON c.contest_id = co.id
+        WHERE c.id = ?
+    ");
+    $stmt->execute([$contestant_id]);
+    return $stmt->fetch();
+}
+
+/**
+ * Chuyển hướng đến URL
+ */
+function redirect($url) {
+    header('Location: ' . $url);
+    exit;
+}
+
+/**
+ * Làm sạch output để tránh XSS
+ */
+function sanitize_output($data) {
+    if (is_array($data)) {
+        foreach ($data as $key => $value) {
+            $data[$key] = sanitize_output($value);
+        }
+    } else {
+        $data = htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
+    }
+    return $data;
+}
+
+// Validation functions
+function validate_email($email) {
+    return filter_var($email, FILTER_VALIDATE_EMAIL);
+}
+
+function validate_phone($phone) {
+    return preg_match('/^[0-9]{10,11}$/', $phone);
+}
+
+function validate_password($password) {
+    return strlen($password) >= 8 &&
+           preg_match('/[A-Z]/', $password) &&
+           preg_match('/[a-z]/', $password) &&
+           preg_match('/[0-9]/', $password);
+}
+
+// Session handling functions
+function start_session() {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_set_cookie_params([
+            'lifetime' => SESSION_LIFETIME,
+            'path' => '/',
+            'domain' => '',
+            'secure' => false, // Set to true in production
+            'httponly' => true,
+            'samesite' => 'Lax'
+        ]);
+        session_start();
+    }
+}
+
+function regenerate_session() {
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        session_regenerate_id(true);
+    }
+}
+
+// Error handling functions
+function handle_error($errno, $errstr, $errfile, $errline) {
+    if (!(error_reporting() & $errno)) {
+        return false;
+    }
+
+    $error = [
+        'type' => $errno,
+        'message' => $errstr,
+        'file' => $errfile,
+        'line' => $errline
+    ];
+
+    error_log(json_encode($error));
+
+    if (defined('DEBUG') && DEBUG) {
+        throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
+    }
+
+    return true;
+}
+
+set_error_handler('handle_error');

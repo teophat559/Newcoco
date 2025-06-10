@@ -1,0 +1,83 @@
+<!-- TODO: Fetch data b?ng JS t?i d�y -->
+
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="<!-- TODO: Fetch data b?ng JS t?i d�y -->/contests">Cuộc thi</a></li>
+                <li class="breadcrumb-item active">Tạo cuộc thi mới</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title mb-4">Tạo cuộc thi mới</h4>
+                <form method="POST" action="" enctype="multipart/form-data" onsubmit="return validateForm('create-contest-form')">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Tên cuộc thi</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Mô tả</label>
+                        <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="start_date" class="form-label">Ngày bắt đầu</label>
+                                <input type="datetime-local" class="form-control" id="start_date" name="start_date" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="end_date" class="form-label">Ngày kết thúc</label>
+                                <input type="datetime-local" class="form-control" id="end_date" name="end_date" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="max_participants" class="form-label">Số lượng người tham gia tối đa</label>
+                        <input type="number" class="form-control" id="max_participants" name="max_participants" min="0">
+                        <div class="form-text">Để trống nếu không giới hạn</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="rules" class="form-label">Thể lệ cuộc thi</label>
+                        <textarea class="form-control" id="rules" name="rules" rows="4"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="prizes" class="form-label">Giải thưởng</label>
+                        <textarea class="form-control" id="prizes" name="prizes" rows="4"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="banner" class="form-label">Ảnh banner</label>
+                        <input type="file" class="form-control" id="banner" name="banner" accept="image/*">
+                        <div class="form-text">Kích thước tối đa: 2MB. Định dạng: JPG, PNG, GIF</div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>
+                            Tạo cuộc thi
+                        </button>
+                        <a href="<!-- TODO: Fetch data b?ng JS t?i d�y -->/contests" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>
+                            Hủy
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- TODO: Fetch data b?ng JS t?i d�y -->

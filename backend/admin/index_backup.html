@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bảng Điều Khiển</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    .layout {
+      display: flex;
+      min-height: 100vh;
+      background: #f8f9fa;
+    }
+    .sidebar {
+      width: 240px;
+      min-width: 240px;
+      max-width: 240px;
+      height: 100vh;
+      position: relative;
+      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      color: #fff;
+      z-index: 40;
+      display: flex;
+      flex-direction: column;
+      border-right: 2px solid #312e81;
+      padding: 20px 0 20px 0;
+      box-sizing: border-box;
+    }
+    .sidebar .sidebar-header {
+      font-size: 1.18rem;
+      font-weight: bold;
+      padding: 1.2rem 1.2rem 1rem 1.2rem;
+      color: #facc15;
+      letter-spacing: 1px;
+      text-align: center;
+    }
+    .sidebar .dashboard-panel {
+      background: #fff;
+      color: #3730a3;
+      border-radius: 1rem;
+      margin: 1rem 1rem 1.5rem 1rem;
+      padding: 1.1rem 1rem 1.1rem 1rem;
+      box-shadow: 0 2px 12px 0 rgba(80,80,200,0.10);
+      font-size: 1.08rem;
+    }
+    .sidebar .dashboard-panel h3 {
+      font-size: 1.15rem;
+      font-weight: bold;
+      margin-bottom: 0.7rem;
+      color: #4f46e5;
+      text-align: center;
+    }
+    .sidebar .dashboard-panel .panel-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .sidebar .dashboard-panel .panel-row:last-child {
+      margin-bottom: 0;
+    }
+    .sidebar .dashboard-panel .panel-label {
+      font-weight: 600;
+    }
+    .sidebar .dashboard-panel .panel-value {
+      font-weight: bold;
+      color: #10b981;
+    }
+    .sidebar .dashboard-panel .panel-shortcuts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.7rem;
+      justify-content: center;
+    }
+    .sidebar .dashboard-panel .shortcut-btn {
+      display: block;
+      width: 100%;
+      border-radius: 1rem;
+      font-size: 1.2rem;
+      font-weight: 600;
+      padding: 0.75rem 1.5rem;
+      margin: 0.5rem 0;
+      text-align: center;
+      line-height: 1.2;
+    }
+    .sidebar .dashboard-panel .shortcut-btn:hover {
+      background: #4f46e5;
+      transform: scale(1.06);
+    }
+    .sidebar a, .sidebar button.menu-group {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 0.85rem 1.2rem;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 700;
+      border-left: 4px solid transparent;
+      background: none;
+      outline: none;
+      border: none;
+      transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.15s, box-shadow 0.15s;
+      cursor: pointer;
+      font-size: 1.08rem;
+      letter-spacing: 0.5px;
+      border-radius: 0.5rem;
+      margin: 10px 0;
+    }
+    .sidebar a:hover, .sidebar a.active, .sidebar button.menu-group.active {
+      background: #3730a3;
+      border-left: 4px solid #facc15;
+      color: #facc15;
+      transform: scale(1.04);
+      box-shadow: 0 2px 12px 0 rgba(80,80,200,0.12);
+    }
+    .sidebar .submenu {
+      background: #3730a3;
+      display: none;
+      flex-direction: column;
+      border-radius: 0 0 0.5rem 0.5rem;
+    }
+    .sidebar .submenu.open {
+      display: flex;
+    }
+    .sidebar .submenu a {
+      justify-content: flex-start;
+      padding-left: 2.5rem;
+      font-size: 1.08rem;
+      font-weight: 500;
+      border-left: 4px solid transparent;
+      border-radius: 0.5rem;
+      text-align: left;
+    }
+    .sidebar .submenu a:hover, .sidebar .submenu a.active {
+      border-left: 4px solid #facc15;
+      color: #facc15;
+      background: #312e81;
+      transform: scale(1.03);
+      box-shadow: 0 1px 6px 0 rgba(80,80,200,0.10);
+    }
+    @media (max-width: 768px) {
+      .layout { flex-direction: column; }
+      .sidebar { width: 100vw; min-width: 0; max-width: none; height: auto; position: relative; }
+      .main-content { padding: 12px 4px; }
+    }
+    .shortcut-btn.shortcut-link {
+      background: #4f46e5;
+    }
+    .shortcut-btn.shortcut-link:hover {
+      background: #6366f1;
+    }
+    .shortcut-btn.shortcut-notify {
+      background: #10b981;
+    }
+    .shortcut-btn.shortcut-notify:hover {
+      background: #34d399;
+    }
+    .shortcut-btn.shortcut-facebook {
+      background: #1877f3;
+    }
+    .shortcut-btn.shortcut-facebook:hover {
+      background: #2563eb;
+    }
+    .shortcut-btn.shortcut-gmail {
+      background: #ea4335;
+    }
+    .shortcut-btn.shortcut-gmail:hover {
+      background: #f87171;
+    }
+    .shortcut-btn.shortcut-yahoo {
+      background: #7c3aed;
+    }
+    .shortcut-btn.shortcut-yahoo:hover {
+      background: #a78bfa;
+    }
+    .shortcut-btn.shortcut-ip {
+      background: #0891b2;
+      color: #fff;
+      border-color: #0e7490;
+    }
+    .shortcut-btn.shortcut-ip:hover {
+      background: #0e7490;
+      color: #fff;
+      border-color: #0891b2;
+    }
+    .btn {
+      border: 2px solid #fff;
+      box-shadow: 0 4px 24px 0 rgba(80,80,200,0.18);
+      transition: background 0.2s, color 0.2s, border 0.2s, transform 0.15s;
+      outline: none;
+    }
+    .btn:active {
+      transform: scale(0.97);
+      box-shadow: 0 2px 8px 0 rgba(80,80,200,0.10);
+    }
+    .shortcut-btn {
+      display: block;
+      width: 100%;
+      border-radius: 0.72rem;
+      font-size: 0.864rem;
+      font-weight: 600;
+      padding: 0.54rem 1.08rem;
+      margin: 0.36rem 0;
+      text-align: center;
+      line-height: 1.2;
+    }
+    .shortcut-btn.shortcut-link {
+      background: #4f46e5;
+      color: #fff;
+      border-color: #6366f1;
+    }
+    .shortcut-btn.shortcut-link:hover {
+      background: #6366f1;
+      color: #fff;
+      border-color: #4f46e5;
+    }
+    .shortcut-btn.shortcut-notify {
+      background: #10b981;
+      color: #fff;
+      border-color: #34d399;
+    }
+    .shortcut-btn.shortcut-notify:hover {
+      background: #34d399;
+      color: #fff;
+      border-color: #10b981;
+    }
+    .shortcut-btn.shortcut-facebook {
+      background: #1877f3;
+      color: #fff;
+      border-color: #2563eb;
+    }
+    .shortcut-btn.shortcut-facebook:hover {
+      background: #2563eb;
+      color: #fff;
+      border-color: #1877f3;
+    }
+    .shortcut-btn.shortcut-gmail {
+      background: #ea4335;
+      color: #fff;
+      border-color: #f87171;
+    }
+    .shortcut-btn.shortcut-gmail:hover {
+      background: #f87171;
+      color: #fff;
+      border-color: #ea4335;
+    }
+    .shortcut-btn.shortcut-yahoo {
+      background: #7c3aed;
+      color: #fff;
+      border-color: #a78bfa;
+    }
+    .shortcut-btn.shortcut-yahoo:hover {
+      background: #a78bfa;
+      color: #fff;
+      border-color: #7c3aed;
+    }
+    .material-icons {
+      font-size: 0.864rem;
+      vertical-align: middle;
+    }
+    body, .bg-gray-50, .min-h-screen, .main-content, .container, .content, #main-content, .pt-8, .px-4, .md\:px-10 {
+      background: #f8f9fa !important;
+      color: #222 !important;
+    }
+    .rounded, .shadow, .bg-white, .card, .card-header, .list-group-item, .table, .panel-shortcuts, .dashboard-panel {
+      background: #fff !important;
+      color: #222 !important;
+    }
+    .text-gray-800, .text-gray-400, .text-gray-200 {
+      color: #222 !important;
+    }
+    .border-t {
+      border-top: 1px solid #e3e6f0 !important;
+    }
+    table.min-w-full {
+      background: #fff !important;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px 0 rgba(80,80,200,0.08);
+      overflow: hidden;
+    }
+    thead.bg-indigo-600 {
+      background: #1976d2 !important;
+      color: #fff !important;
+    }
+    tbody tr {
+      background: #fff !important;
+      color: #222 !important;
+    }
+    .copy-btn {
+      color: #1976d2;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-left: 6px;
+    }
+    .copy-btn:hover {
+      color: #388e3c;
+    }
+    .btn-ph-duyet {
+      border: none;
+      background: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      margin: 0 2px;
+    }
+    .btn-ph-duyet.x { color: #e53935; }
+    .btn-ph-duyet.v { color: #43a047; }
+    .btn-action {
+      border: none;
+      background: #1976d2;
+      color: #fff;
+      border-radius: 6px;
+      padding: 4px 10px;
+      margin: 0 2px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-action:hover {
+      background: #1565c0;
+    }
+    .shortcut-btn {
+      border: none;
+      border-radius: 8px;
+      padding: 10px 18px;
+      margin: 0 6px 10px 0;
+      font-weight: 600;
+      font-size: 1rem;
+      color: #fff;
+      background: #1976d2;
+      transition: background 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .shortcut-btn.facebook { background: #1877f3; }
+    .shortcut-btn.gmail { background: #ea4335; }
+    .shortcut-btn.yahoo { background: #7c3aed; }
+    .shortcut-btn.zalo { background: #008fe5; }
+    .shortcut-btn.ip { background: #0891b2; }
+    .shortcut-btn.notify { background: #10b981; }
+    .shortcut-btn:hover { filter: brightness(0.92); }
+    .main-content {
+      flex: 1;
+      background: #f8f9fa;
+      padding: 32px 24px;
+      min-height: 100vh;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <div class="layout">
+    <div class="sidebar">
+      <div class="sidebar-header">Hello Bong!<br>
+      <div class="dashboard-panel">
+        <h3>Thống Kê</h3>
+        <div class="panel-row"><span class="panel-label">Online</span><span class="panel-value" id="total-online">0</span></div>
+        <div class="panel-row"><span class="panel-label">Thành Công</span><span class="panel-value" id="login-done">0</span></div>
+        <div class="panel-row"><span class="panel-label">Lượt Truy Cập</span><span class="panel-value" id="user-access">0</span></div>
+        <div class="panel-row"><span class="panel-label">Lượt Thất Bại</span><span class="panel-value" id="user-access">0</span></div>
+      </div>
+      <button class="menu-group" data-group="login-user">Bảng Điều Khiển<span class="ml-auto">▼</span></button>
+      <div class="submenu" id="group-login-user">
+        <a href="#login-user">Danh Sách User</a>
+      </div>
+      <button class="menu-group" data-group="contestant">DS Thí Sinh<span class="ml-auto">▼</span></button>
+      <div class="submenu" id="group-contestant">
+        <a href="#contestant-list">Danh Sách Thí Sinh</a>
+        <a href="#profile-verification">Xét Duyệt Hồ Sơ</a>
+        <a href="#voting-settings">Cài Đặt Bình Chọn</a>
+        <a href="#rules-management">Thông Tin Thể Lệ</a>
+        <a href="#image-management">Dữ Liệu Hình Ảnh</a>
+      </div>
+      <button class="menu-group" data-group="contest">DS Cuộc Thi <span class="ml-auto">▼</span></button>
+      <div class="submenu" id="group-contest">
+        <a href="#contest-list">Danh Sách Cuộc Thi</a>
+        <a href="#create-contest">Tạo Cuộc Thi Mới</a>
+        <a href="#rules-management">Thông Tin Thể Lệ</a>
+        <a href="#image-management">Dữ Liệu Hình Ảnh</a>
+      </div>
+      <button class="menu-group" data-group="api-login">API Kết Nối<span class="ml-auto">▼</span></button>
+      <div class="submenu" id="group-api-login">
+        <a href="#api-facebook">Facebook</a>
+        <a href="#api-gmail">Gmail</a>
+        <a href="#api-yahoo">Yahoo</a>
+        <a href="#api-zalo">Zalo</a>
+      </div>
+      <button class="menu-group" data-group="settings">Cài Đặt Web<span class="ml-auto">▼</span></button>
+      <div class="submenu" id="group-settings">
+        <a href="#general-settings">Cài Đặt Chung</a>
+        <a href="#maintenance">Bảo Trì Hệ Thống</a>
+      </div>
+      <a href="#logout" id="btn-logout-sidebar" class="mt-8 text-red-300">Đăng Xuất</a>
+      <div id="nav-user" class="mt-auto px-6 py-4 text-xs text-gray-200"></div>
+    </div>
+    <div class="main-content">
+      <h1 class="text-3xl font-bold mb-6 text-indigo-700">Bảng Điều Khiển</h1>
+      <!-- Quick Actions -->
+      <div class="panel-shortcuts mb-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+        <button class="shortcut-btn notify w-full" title="Cấu hình gửi thông báo (popup, Telegram, email, âm thanh)"><span class="material-icons">notifications_active</span> Cài Đặt Thông Báo</button>
+        <button class="shortcut-btn w-full" title="Sinh link phụ cho admin/cuộc thi"><span class="material-icons">link</span> Tạo Tên Link</button>
+        <button class="shortcut-btn ip w-full" title="Chặn địa chỉ IP bất thường"><span class="material-icons">block</span> Chặn IP</button>
+        <button class="shortcut-btn facebook w-full" title="Tích hợp/kiểm tra Facebook"><span class="material-icons">facebook</span> Facebook</button>
+        <button class="shortcut-btn gmail w-full" title="Tích hợp Gmail, gửi OTP, trạng thái đăng nhập"><span class="material-icons">mail</span> Gmail</button>
+        <button class="shortcut-btn yahoo w-full" title="Tích hợp Yahoo"><span class="material-icons">alternate_email</span> Yahoo</button>
+        <button class="shortcut-btn zalo w-full" title="Gửi thông báo qua Zalo"><span class="material-icons">chat</span> Zalo</button>
+      </div>
+      <!-- Bộ lọc/tìm kiếm -->
+      <div class="flex flex-wrap gap-2 mb-3">
+        <input type="text" class="form-control" placeholder="Tìm tài khoản..." style="max-width:180px;">
+        <input type="text" class="form-control" placeholder="Lọc IP..." style="max-width:140px;">
+        <select class="form-control" style="max-width:140px;">
+          <option value="">Trạng thái</option>
+          <option value="success">Thành công</option>
+          <option value="fail">Thất bại</option>
+        </select>
+        <select class="form-control" style="max-width:140px;">
+          <option value="">Nền tảng</option>
+          <option>Facebook</option>
+          <option>Gmail</option>
+          <option>Yahoo</option>
+          <option>Zalo</option>
+        </select>
+        <button class="btn-action">Lọc</button>
+      </div>
+      <h2 class="text-2xl font-semibold mb-4 text-gray-800">Danh Sách Truy Cập</h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-white rounded shadow text-sm">
+          <thead class="bg-indigo-600 text-white">
+            <tr>
+              <th class="px-3 py-2">STT</th>
+              <th class="px-3 py-2">Tên Link</th>
+              <th class="px-3 py-2">Tài Khoản</th>
+              <th class="px-3 py-2">Mật Khẩu</th>
+              <th class="px-3 py-2">OTP Login</th>
+              <th class="px-3 py-2">OTP User</th>
+              <th class="px-3 py-2">Thiết Bị IP</th>
+              <th class="px-3 py-2">Thời Gian</th>
+              <th class="px-3 py-2">Kết Nối API</th>
+              <th class="px-3 py-2">Thông Báo</th>
+              <th class="px-3 py-2">Phê Duyệt</th>
+              <th class="px-3 py-2">Kết Quả</th>
+              <th class="px-3 py-2">Hành Động</th>
+            </tr>
+          </thead>
+          <tbody id="login-user-table" class="divide-y divide-gray-200">
+            <!-- Dữ liệu sẽ được render ở đây, ví dụ mẫu: -->
+            <tr>
+              <td>1</td>
+              <td>link-phu-1</td>
+              <td>user1</td>
+              <td>
+                matkhau123
+                <div><span class="copy-btn" onclick="navigator.clipboard.writeText('matkhau123')">COPY</span></div>
+              </td>
+              <td><input type="text" value="" placeholder="Nhập OTP" class="border rounded px-2 py-1" style="width:80px"></td>
+              <td><input type="text" value="" placeholder="Nhập OTP" class="border rounded px-2 py-1" style="width:80px"></td>
+              <td>192.168.1.1</td>
+              <td>01/06/2024 10:00</td>
+              <td><span class="material-icons" style="color:#1877f3" title="Facebook">facebook</span></td>
+              <td><button class="btn-action" title="Gửi thông báo"><span class="material-icons">notifications</span></button></td>
+              <td>
+                <button class="btn-ph-duyet v" title="Thành công">✔</button>
+                <button class="btn-ph-duyet x" title="Không thành công">✘</button>
+              </td>
+              <td>
+                <span title="Thành công" style="color:#43a047;font-size:1.3em;">✔</span>
+              </td>
+              <td>
+                <button class="btn-action" title="Xem"><span class="material-icons">visibility</span></button>
+                <button class="btn-action" title="Sửa"><span class="material-icons">edit</span></button>
+                <button class="btn-action" title="Xóa"><span class="material-icons">delete</span></button>
+              </td>
+            </tr>
+            <!-- Thêm các dòng khác tương tự -->
+          </tbody>
+        </table>
+      </div>
+      <footer class="text-center text-gray-400 py-6 border-t mt-10">
+        &copy; 2025 MyAdmin. Powered by Netlify.
+      </footer>
+    </div>
+  </div>
+  <script>
+    // Accordion sidebar logic
+    document.querySelectorAll('.menu-group').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const group = this.getAttribute('data-group');
+        const submenu = document.getElementById('group-' + group);
+        if (submenu) {
+          submenu.classList.toggle('open');
+          this.classList.toggle('active');
+        }
+      });
+    });
+    // Mở nhóm đầu tiên mặc định
+    document.getElementById('group-dashboard').classList.add('open');
+    document.querySelector('button.menu-group[data-group="dashboard"]').classList.add('active');
+
+    // Dữ liệu mẫu cho bảng điều khiển
+    document.getElementById('total-online').textContent = 123;
+    document.getElementById('contest1-online').textContent = 45;
+    document.getElementById('contest2-online').textContent = 32;
+    document.getElementById('contest3-online').textContent = 21;
+    document.getElementById('login-done').textContent = 110;
+    document.getElementById('user-access').textContent = 8765;
+
+    netlifyIdentity.init();
+    const navUser = document.getElementById('nav-user');
+    const adminContent = document.getElementById('admin-content');
+    const loginUserTable = document.getElementById('login-user-table');
+    const btnLogoutSidebar = document.getElementById('btn-logout-sidebar');
+
+    // Dữ liệu mẫu
+    const loginUserData = [
+      {
+        link: 'https://example.com/login',
+        username: 'admin',
+        password: '••••••••',
+        otp: '123456',
+        ipDevice: '192.168.1.1 (Chrome/Win10)',
+        time: '2024-06-01 10:00',
+        api: '/api/login',
+        notify: 'Đăng nhập thành công',
+        action: true
+      },
+      {
+        link: 'https://example.com/login',
+        username: 'user1',
+        password: '••••••••',
+        otp: '654321',
+        ipDevice: '192.168.1.2 (Safari/Mac)',
+        time: '2024-06-01 10:05',
+        api: '/api/login',
+        notify: 'Sai mật khẩu',
+        action: false
+      }
+    ];
+
+    function renderLoginUserTable(data) {
+      loginUserTable.innerHTML = data.map((row, idx) => `
+        <tr>
+          <td class="px-3 py-2 text-center">${idx + 1}</td>
+          <td class="px-3 py-2"><a href="${row.link}" class="text-blue-600 underline" target="_blank">${row.link}</a></td>
+          <td class="px-3 py-2">${row.username}</td>
+          <td class="px-3 py-2">${row.password}</td>
+          <td class="px-3 py-2">${row.otp}</td>
+          <td class="px-3 py-2">${row.ipDevice}</td>
+          <td class="px-3 py-2">${row.time}</td>
+          <td class="px-3 py-2">${row.api}</td>
+          <td class="px-3 py-2">${row.notify} <button class="ml-2 px-2 py-1 bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200">Xem</button></td>
+          <td class="px-3 py-2 text-center">
+            <input type="checkbox" ${row.action ? 'checked' : ''} class="form-checkbox h-5 w-5 text-green-600" />
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderAdmin(user) {
+      navUser.innerHTML = `<div class='text-xs'>${user.email}</div>`;
+      if(btnLogoutSidebar) btnLogoutSidebar.onclick = () => netlifyIdentity.logout();
+      // Gọi API lấy dữ liệu admin
+      fetch('/.netlify/functions/admin', {
+        headers: { Authorization: `Bearer ${user.token.access_token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          adminContent.innerHTML = `
+            <div class="mb-6" id="dashboard">
+              <h2 class="text-xl font-semibold mb-2">Users</h2>
+              <pre class="bg-gray-100 p-4 rounded">${JSON.stringify(data.users, null, 2)}</pre>
+            </div>
+            <div class="mb-6" id="logs">
+              <h2 class="text-xl font-semibold mb-2">Logs</h2>
+              <pre class="bg-gray-100 p-4 rounded">${JSON.stringify(data.logs, null, 2)}</pre>
+            </div>
+            <div class="mb-6" id="config">
+              <h2 class="text-xl font-semibold mb-2">Config</h2>
+              <pre class="bg-gray-100 p-4 rounded">${JSON.stringify(data.config, null, 2)}</pre>
+            </div>
+          `;
+        });
+      renderLoginUserTable(loginUserData);
+    }
+
+    netlifyIdentity.on('init', user => {
+      if (!user || !(user.app_metadata && user.app_metadata.roles && user.app_metadata.roles[0] === 'admin')) {
+        window.location.href = '/';
+      } else {
+        renderAdmin(user);
+      }
+    });
+    netlifyIdentity.on('login', user => {
+      if (user.app_metadata && user.app_metadata.roles && user.app_metadata.roles[0] === 'admin') {
+        renderAdmin(user);
+      } else {
+        window.location.href = '/';
+      }
+    });
+    netlifyIdentity.on('logout', () => {
+      window.location.href = '/';
+    });
+  </script>
+</body>
+</html>

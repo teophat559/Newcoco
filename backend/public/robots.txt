@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+Allow: /contests.php
+Allow: /contest-details.php
+Allow: /register.php
+Allow: /login.php
+Allow: /profile.php
+
+Disallow: /admin/
+Disallow: /includes/
+Disallow: /logs/
+Disallow: /vendor/
+Disallow: /uploads/
+Disallow: /*.php$
+Disallow: /*.json$
+Disallow: /*.env$
+Disallow: /*.log$
+Disallow: /*.sql$
+
+Sitemap: https://your-domain.com/sitemap.xml
